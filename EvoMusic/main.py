@@ -7,6 +7,13 @@ from musicpy import database
 from musicpy.musicpy import N, C, play
 from musicpy.structures import chord
 
+C2 = 'C2'
+D2 = 'D2'
+E2 = 'E2'
+F2 = 'F2'
+G2 = 'G2'
+A2 = 'A2'
+B2 = 'B2'
 C3 = 'C3'
 D3 = 'D3'
 E3 = 'E3'
@@ -53,7 +60,8 @@ Bm5 = musicpy.chord('B5, D6, F6').set(1)
 
 Chords = [CM3, Dm3, Em3, FM4, GM4, Am4, Bm4, CM4, Dm4, Em4, FM5, GM5, Am5, Bm5]
 
-c_major_scale = [C3, D3, E3, F3, G3, A3, B3,
+c_major_scale = [C2, D2, E2, F2, G2, A2, B2,
+                 C3, D3, E3, F3, G3, A3, B3,
                  C4, D4, E4, F4, G4, A4, B4,
                  C5, D5, E5, F5, G5, A5, B5]
 
@@ -97,8 +105,8 @@ def genetic_algorithm(pop_size, generations, tournament_size=2):
             parent_a = tournament_selection(population, t)
             parent_b = tournament_selection(population, t)
             child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
-            new_population.append(mutate_first_inversion(child_a))
-            new_population.append(mutate_maj7(child_b))
+            new_population.append(mutate(child_a))
+            new_population.append(mutate(child_b))
         population = new_population
         g -= 1
     print(best)
@@ -135,10 +143,18 @@ def crossover(parent_a, parent_b):
     return a, b
 
 
+# This function creates a list of all
+# the mutation functions and randomly selects
+# one, and returns that functions return value
+def mutate(solution):
+    func_list = [mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
+    return rnd.choice(func_list)(solution)
+
+
 def mutate_first_inversion(solution):
     length = len(solution)
     probability = 1 / length
-    random_no = rnd.uniform(0,1)
+    random_no = rnd.uniform(0, 1)
     v = solution.copy()
 
     for i in range(1, length):
@@ -147,37 +163,63 @@ def mutate_first_inversion(solution):
     return v
 
 
-def mutate_maj7(solution):
+def mutate_move_one_tone(solution):
     length = len(solution)
     probability = 1 / length
-    random_no = rnd.uniform(0,1)
+    random_no = rnd.uniform(0, 1)
     v = solution.copy()
 
     for i in range(1, length):
         if probability >= random_no:
-            triad = v[i]
-            maj7 = triad('#7')
-            v[i] = maj7
-            print('Major 7th a chord!')
+            v[i] = v[i] + 1
     return v
 
 
-def short_composition(solution):
-    chords = []
-    for i in range(len(solution)):
-        chords.append(musicpy.chord(solution[i]).set(1))
-    fitness(solution)
-    c1 = chords[0]
-    c2 = chords[1]
-    c3 = chords[2]
-    c4 = chords[3]
-    c5 = chords[4]
-    c6 = chords[5]
-    c7 = chords[6]
-    c8 = chords[7]
+def mutate_flip_quality(solution):
+    length = len(solution)
+    probability = 1 / length
+    random_no = rnd.uniform(0, 1)
+    v = solution.copy()
 
-    composition = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
-    play(composition, wait=True)
+    for i in range(1, length):
+        if probability >= random_no:
+            if (v[i][0].degree - v[i][1].degree) * -1 == database.minor_third:
+                v[i][1] = v[i][1] + 1
+                print(f'Made minor third into major third')
+            elif (v[i][0].degree - v[i][1].degree) * -1 == database.major_third:
+                v[i][1] = v[i][1] - 1
+                print(f'Made major third into minor third')
+            else:
+                pass
+    return v
+
+
+# def mutate_dot(solution):
+#     length = len(solution)
+#     probability = 1 / length
+#     random_no = rnd.uniform(0, 1)
+#     v = solution.copy()
+#
+#     for i in range(1, length):
+#         if probability >= random_no:
+#             random_note = rnd.choice
+#             random_note =  random_note.dotted()
+#
+#     return v
+
+# def mutate_maj7(solution):
+#     length = len(solution)
+#     probability = 1 / length
+#     random_no = rnd.uniform(0,1)
+#     v = solution.copy()
+#
+#     for i in range(1, length):
+#         if probability >= random_no:
+#             triad = v[i]
+#             maj7 = triad('#7')
+#             v[i] = maj7
+#             print('Major 7th a chord!')
+#     return v
 
 
 def fitness(solution):
@@ -186,6 +228,53 @@ def fitness(solution):
         return sol_fitness
     else:
         for b in range(len(solution)-1):
+
+            if solution[b] in Chords:
+                sol_fitness += 6
+
+            # check for minor seconds
+            for c in range(len(solution[b])):
+                if c + 1 > len(solution[b]) - 1:
+                    pass
+                else:
+                    if (solution[b][c].degree - solution[b][c+1].degree) * -1 == database.minor_second:
+                        sol_fitness -= 3
+
+            # check that second note and third note are not further than an octave apart
+            if solution[b][1].degree - solution[b][2].degree < 0:
+                sol_fitness += 1
+
+            # check that root note and second note are not a minor, nor major second apart
+            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_second:
+                sol_fitness -= 5
+
+            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_second:
+                sol_fitness -= 5
+
+            # check if first two notes of each chord in each bar
+            # are at the very least a minor or major third interval
+            # as the basic function for every chord comes from this interval
+            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_third:
+                print(f'Minor third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+                sol_fitness += 3
+            elif ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_third:
+                print(f'Major third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+                sol_fitness += 3
+            else:
+                pass
+
+            # check if root and third note of triad are a perfect fifth apart
+            if ((solution[b][0].degree - solution[b][2].degree) * -1) == database.perfect_fifth:
+                print(f'Perfect fifth detected on bar {b+1} between root note {solution[b][0]} and {solution[b][1]}')
+                sol_fitness += 5
+
+            # check if root and third interval are an octave or two apart
+            if (solution[b][0].degree - solution[b][2].degree) == database.perfect_octave or (solution[b][0].degree - solution[b][1].degree) == (database.perfect_octave * 2):
+                sol_fitness -= 1
+
+            # checks for basic inversions
+            # as they can be pleasing, but more checks should be made
+            # for chord functions, as inversions change the function
             chord_to_compare = solution[b]
             chord_to_compare_1st_inversion = (chord_to_compare / 1)
             chord_to_compare_2nd_inversion = (chord_to_compare / 2)
@@ -201,31 +290,35 @@ def fitness(solution):
                 print(f'second inversion found in {b+1}th element!')
                 sol_fitness += 1
 
-            if b+1 > len(solution)-1:
-                print("too far chief")
-            else:
-                note_to_compare_interval = chord_to_compare[0]
-                note_to_compare_interval = note_to_compare_interval.with_interval(database.perfect_fifth)
-                chord_to_compare_interval_next_bar = solution[b+1][0]
-                if note_to_compare_interval[1] == chord_to_compare_interval_next_bar:
-                    print(f'perfect fifth detected between root note of bar {b+1} and {b+2}')
-                    sol_fitness += 1
-
-        print(sol_fitness)
+            # checks for a perfect fifth interval between a bar and the next bar
+            # as a V-I progression is found in most western music
+            # if b+1 > len(solution)-1:
+            #     print("too far chief")
+            # else:
+            #     next_bar_check_fifth = solution[b+1][0]
+            #     next_bar_check_fifth = next_bar_check_fifth.with_interval(database.perfect_fifth)
+            #     chord_to_compare_interval_next_bar = chord_to_compare[0]
+            #     if next_bar_check_fifth[1] == chord_to_compare_interval_next_bar:
+            #         print(f'perfect fifth detected between root note of bar {b+1} and {b+2}')
+            #         sol_fitness += 1
+            #
+            # if b+1 > len(solution)-1:
+            #     print("too far chief")
+            # else:
+            #     next_bar_check_fourth = solution[b+1][0]
+            #     next_bar_check_fourth = next_bar_check_fourth.with_interval(database.perfect_fourth)
+            #     chord_to_compare_interval_next_bar = chord_to_compare[0]
+            #     if next_bar_check_fourth[1] == chord_to_compare_interval_next_bar:
+            #         print(f'perfect fourth detected between root note of bar {b+1} and {b+2}')
+            #         sol_fitness += 1
         return sol_fitness
-
-
-def check_chords():
-    b = C('C5, E5, G6')
-    b2 = C('C5, E5, G6')
-    print("same") if b == b2 else print("different")
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(10, 100)
+    sol = genetic_algorithm(30, 100)
     while sol == [0]:
-        sol = genetic_algorithm(10, 100)
+        sol = genetic_algorithm(30, 100)
 
     c1 = sol[0]
     c2 = sol[1]
@@ -235,5 +328,14 @@ if __name__ == '__main__':
     c6 = sol[5]
     c7 = sol[6]
     c8 = sol[7]
-    C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c1
+    # c9 = sol[8]
+    # c10 = sol[9]
+    # c11 = sol[10]
+    # c12 = sol[11]
+    # c13 = sol[12]
+    # c14 = sol[13]
+    # c15 = sol[14]
+    # c16 = sol[15]
+    # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
+    C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     play(C, wait=True)
