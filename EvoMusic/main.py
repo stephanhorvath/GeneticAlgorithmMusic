@@ -6,6 +6,7 @@ from enum import Enum
 from musicpy import database
 from musicpy.musicpy import N, C, play
 from musicpy.structures import chord
+from fitnesses import *
 
 C2 = 'C2'
 D2 = 'D2'
@@ -76,6 +77,7 @@ test_population = [
     [chord('E2, F2, B2'), chord('E2, A2, B2'), chord('G2, B2, F3'), chord('D2, A2, D3'), chord('G2, B3, G4'), chord('B4, F5, A5'), chord('C2, G3, G4'), chord('E3, F3, D4')],
     [chord('D4, G4, A4'), chord('D5, A5, B5'), chord('D3, F3, D4'), chord('G2, G2, A5'), chord('E3, E3, A4'), chord('C2, G2, B2'), chord('E3, G3, E4'), chord('D2, G4, E5')],
     [chord('F2, F3, G4'), chord('F4, B4, E5'), chord('D2, F2, D5'), chord('E3, D4, E4'), chord('B2, D4, E4'), chord('G3, F4, F5'), chord('C2, E2, B2'), chord('D2, A5, B5')]]
+
 
 def generate_solution() -> []:
     # solution = [rnd.choices(cmajor, None, k=32)]
@@ -248,97 +250,97 @@ def mutate_flip_quality(solution):
 #     return v
 
 
-def fitness(solution):
-    sol_fitness = 0
-    if solution == [0]:
-        return sol_fitness
-    else:
-        for b in range(len(solution)-1):
-
-            if solution[b] in Chords:
-                sol_fitness += 6
-
-            # check for minor seconds
-            for c in range(len(solution[b])):
-                if c + 1 > len(solution[b]) - 1:
-                    pass
-                else:
-                    if (solution[b][c].degree - solution[b][c+1].degree) * -1 == database.minor_second:
-                        sol_fitness -= 3
-
-            # check that second note and third note are not further than an octave apart
-            if solution[b][1].degree - solution[b][2].degree < 0:
-                sol_fitness += 1
-
-            # check that root note and second note are not a minor, nor major second apart
-            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_second:
-                sol_fitness -= 5
-
-            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_second:
-                sol_fitness -= 5
-
-            # check if first two notes of each chord in each bar
-            # are at the very least a minor or major third interval
-            # as the basic function for every chord comes from this interval
-            if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_third:
-                print(f'Minor third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
-                sol_fitness += 3
-            elif ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_third:
-                print(f'Major third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
-                sol_fitness += 3
-            else:
-                pass
-
-            # check if root and third note of triad are a perfect fifth apart
-            if ((solution[b][0].degree - solution[b][2].degree) * -1) == database.perfect_fifth:
-                print(f'Perfect fifth detected on bar {b+1} between root note {solution[b][0]} and {solution[b][1]}')
-                sol_fitness += 5
-
-            # check if root and third interval are an octave or two apart
-            if (solution[b][0].degree - solution[b][2].degree) == database.perfect_octave or (solution[b][0].degree - solution[b][1].degree) == (database.perfect_octave * 2):
-                sol_fitness -= 1
-
-            # checks for basic inversions
-            # as they can be pleasing, but more checks should be made
-            # for chord functions, as inversions change the function
-            chord_to_compare = solution[b]
-            chord_to_compare_1st_inversion = (chord_to_compare / 1)
-            chord_to_compare_2nd_inversion = (chord_to_compare / 2)
-            if chord_to_compare in Chords:
-                print(f'chord found in {b+1}th element!')
-                sol_fitness += 1
-
-            if chord_to_compare_1st_inversion in Chords:
-                print(f'first inversion found in {b+1}th element!')
-                sol_fitness += 1
-
-            if chord_to_compare_2nd_inversion in Chords:
-                print(f'second inversion found in {b+1}th element!')
-                sol_fitness += 1
-
-            # checks for a perfect fifth interval between a bar and the next bar
-            # as a V-I progression is found in most western music
-            # if b+1 > len(solution)-1:
-            #     print("too far chief")
-            # else:
-            #     next_bar_check_fifth = solution[b+1][0]
-            #     next_bar_check_fifth = next_bar_check_fifth.with_interval(database.perfect_fifth)
-            #     chord_to_compare_interval_next_bar = chord_to_compare[0]
-            #     if next_bar_check_fifth[1] == chord_to_compare_interval_next_bar:
-            #         print(f'perfect fifth detected between root note of bar {b+1} and {b+2}')
-            #         sol_fitness += 1
-            #
-            # if b+1 > len(solution)-1:
-            #     print("too far chief")
-            # else:
-            #     next_bar_check_fourth = solution[b+1][0]
-            #     next_bar_check_fourth = next_bar_check_fourth.with_interval(database.perfect_fourth)
-            #     chord_to_compare_interval_next_bar = chord_to_compare[0]
-            #     if next_bar_check_fourth[1] == chord_to_compare_interval_next_bar:
-            #         print(f'perfect fourth detected between root note of bar {b+1} and {b+2}')
-            #         sol_fitness += 1
-        print(sol_fitness)
-        return sol_fitness
+# def fitness(solution):
+#     sol_fitness = 0
+#     if solution == [0]:
+#         return sol_fitness
+#     else:
+#         for b in range(len(solution)-1):
+#
+#             if solution[b] in Chords:
+#                 sol_fitness += 6
+#
+#             # check for minor seconds
+#             for c in range(len(solution[b])):
+#                 if c + 1 > len(solution[b]) - 1:
+#                     pass
+#                 else:
+#                     if (solution[b][c].degree - solution[b][c+1].degree) * -1 == database.minor_second:
+#                         sol_fitness -= 3
+#
+#             # check that second note and third note are not further than an octave apart
+#             if solution[b][1].degree - solution[b][2].degree < 0:
+#                 sol_fitness += 1
+#
+#             # check that root note and second note are not a minor, nor major second apart
+#             if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_second:
+#                 sol_fitness -= 5
+#
+#             if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_second:
+#                 sol_fitness -= 5
+#
+#             # check if first two notes of each chord in each bar
+#             # are at the very least a minor or major third interval
+#             # as the basic function for every chord comes from this interval
+#             if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_third:
+#                 print(f'Minor third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+#                 sol_fitness += 3
+#             elif ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_third:
+#                 print(f'Major third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+#                 sol_fitness += 3
+#             else:
+#                 pass
+#
+#             # check if root and third note of triad are a perfect fifth apart
+#             if ((solution[b][0].degree - solution[b][2].degree) * -1) == database.perfect_fifth:
+#                 print(f'Perfect fifth detected on bar {b+1} between root note {solution[b][0]} and {solution[b][1]}')
+#                 sol_fitness += 5
+#
+#             # check if root and third interval are an octave or two apart
+#             if (solution[b][0].degree - solution[b][2].degree) == database.perfect_octave or (solution[b][0].degree - solution[b][1].degree) == (database.perfect_octave * 2):
+#                 sol_fitness -= 1
+#
+#             # checks for basic inversions
+#             # as they can be pleasing, but more checks should be made
+#             # for chord functions, as inversions change the function
+#             chord_to_compare = solution[b]
+#             chord_to_compare_1st_inversion = (chord_to_compare / 1)
+#             chord_to_compare_2nd_inversion = (chord_to_compare / 2)
+#             if chord_to_compare in Chords:
+#                 print(f'chord found in {b+1}th element!')
+#                 sol_fitness += 1
+#
+#             if chord_to_compare_1st_inversion in Chords:
+#                 print(f'first inversion found in {b+1}th element!')
+#                 sol_fitness += 1
+#
+#             if chord_to_compare_2nd_inversion in Chords:
+#                 print(f'second inversion found in {b+1}th element!')
+#                 sol_fitness += 1
+#
+#             # checks for a perfect fifth interval between a bar and the next bar
+#             # as a V-I progression is found in most western music
+#             # if b+1 > len(solution)-1:
+#             #     print("too far chief")
+#             # else:
+#             #     next_bar_check_fifth = solution[b+1][0]
+#             #     next_bar_check_fifth = next_bar_check_fifth.with_interval(database.perfect_fifth)
+#             #     chord_to_compare_interval_next_bar = chord_to_compare[0]
+#             #     if next_bar_check_fifth[1] == chord_to_compare_interval_next_bar:
+#             #         print(f'perfect fifth detected between root note of bar {b+1} and {b+2}')
+#             #         sol_fitness += 1
+#             #
+#             # if b+1 > len(solution)-1:
+#             #     print("too far chief")
+#             # else:
+#             #     next_bar_check_fourth = solution[b+1][0]
+#             #     next_bar_check_fourth = next_bar_check_fourth.with_interval(database.perfect_fourth)
+#             #     chord_to_compare_interval_next_bar = chord_to_compare[0]
+#             #     if next_bar_check_fourth[1] == chord_to_compare_interval_next_bar:
+#             #         print(f'perfect fourth detected between root note of bar {b+1} and {b+2}')
+#             #         sol_fitness += 1
+#         print(sol_fitness)
+#         return sol_fitness
 
 
 # Press the green button in the gutter to run the script.
