@@ -43,20 +43,20 @@ G6 = 'G6'
 A6 = 'A6'
 B6 = 'B6'
 
-CM3 = musicpy.chord('C3, E3, G4').set(1)
-Dm3 = musicpy.chord('D3, F3, A4').set(1)
-Em3 = musicpy.chord('E3, G4, B4').set(1)
-FM4 = musicpy.chord('F4, A4, C4').set(1)
-GM4 = musicpy.chord('G4, B4, D4').set(1)
-Am4 = musicpy.chord('A4, C5, E5').set(1)
-Bm4 = musicpy.chord('B4, D5, F5').set(1)
-CM4 = musicpy.chord('C4, E4, G5').set(1)
-Dm4 = musicpy.chord('D4, F4, A5').set(1)
-Em4 = musicpy.chord('E4, G5, B5').set(1)
-FM5 = musicpy.chord('F5, A5, C5').set(1)
-GM5 = musicpy.chord('G5, B5, D5').set(1)
-Am5 = musicpy.chord('A5, C6, E6').set(1)
-Bm5 = musicpy.chord('B5, D6, F6').set(1)
+CM3 = musicpy.chord('C3, E3, G4')
+Dm3 = musicpy.chord('D3, F3, A4')
+Em3 = musicpy.chord('E3, G4, B4')
+FM4 = musicpy.chord('F4, A4, C4')
+GM4 = musicpy.chord('G4, B4, D4')
+Am4 = musicpy.chord('A4, C5, E5')
+Bm4 = musicpy.chord('B4, D5, F5')
+CM4 = musicpy.chord('C4, E4, G5')
+Dm4 = musicpy.chord('D4, F4, A5')
+Em4 = musicpy.chord('E4, G5, B5')
+FM5 = musicpy.chord('F5, A5, C5')
+GM5 = musicpy.chord('G5, B5, D5')
+Am5 = musicpy.chord('A5, C6, E6')
+Bm5 = musicpy.chord('B5, D6, F6')
 
 Chords = [CM3, Dm3, Em3, FM4, GM4, Am4, Bm4, CM4, Dm4, Em4, FM5, GM5, Am5, Bm5]
 
@@ -65,13 +65,24 @@ c_major_scale = [C2, D2, E2, F2, G2, A2, B2,
                  C4, D4, E4, F4, G4, A4, B4,
                  C5, D5, E5, F5, G5, A5, B5]
 
+test_population = [
+    [chord('B2, A5, A5'), chord('D2, G3, G4'), chord('A2, B2, E3'), chord('D2, F3, F4'), chord('A2, F4, G5'), chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
+    [chord('D3, F3, B3'), chord('C3, B3, F5'), chord('B2, G3, C4'), chord('A3, C5, D5'), chord('C3, E3, E3'), chord('G3, E4, E4'), chord('D2, A2, A2'), chord('D2, C3, D3')],
+    [chord('F2, E3, E3'), chord('B4, D5, D5'), chord('D4, E4, B4'), chord('C5, G5, B5'), chord('E2, G2, E3'), chord('E2, G3, A3'), chord('D4, F4, C5'), chord('C4, D4, G4')],
+    [chord('B3, E5, F5'), chord('E2, F2, D3'), chord('C2, E2, B3'), chord('A4, D5, F5'), chord('G2, A2, C3'), chord('E3, G3, D4'), chord('A2, E4, A4'), chord('A3, D4, A4')],
+    [chord('A3, B3, A4'), chord('F2, A2, B2'), chord('F2, C3, B4'), chord('F3, G3, C4'), chord('G3, C4, E4'), chord('F2, G2, C3'), chord('D3, E3, E3'), chord('G2, B2, D4')],
+    [chord('B3, E4, A4'), chord('D2, B2, D3'), chord('E3, D4, G4'), chord('E3, E5, E5'), chord('D2, E4, D5'), chord('C3, G3, A3'), chord('D3, F4, E5'), chord('B2, F3, F3')],
+    [chord('C2, G2, B2'), chord('A3, B3, G4'), chord('A2, C4, E4'), chord('F3, A3, D4'), chord('A2, C3, B3'), chord('E2, F2, C3'), chord('A2, C5, B5'), chord('D2, E2, C3')],
+    [chord('E2, F2, B2'), chord('E2, A2, B2'), chord('G2, B2, F3'), chord('D2, A2, D3'), chord('G2, B3, G4'), chord('B4, F5, A5'), chord('C2, G3, G4'), chord('E3, F3, D4')],
+    [chord('D4, G4, A4'), chord('D5, A5, B5'), chord('D3, F3, D4'), chord('G2, G2, A5'), chord('E3, E3, A4'), chord('C2, G2, B2'), chord('E3, G3, E4'), chord('D2, G4, E5')],
+    [chord('F2, F3, G4'), chord('F4, B4, E5'), chord('D2, F2, D5'), chord('E3, D4, E4'), chord('B2, D4, E4'), chord('G3, F4, F5'), chord('C2, E2, B2'), chord('D2, A5, B5')]]
 
 def generate_solution() -> []:
     # solution = [rnd.choices(cmajor, None, k=32)]
     solution = [0] * 8
     for i in range(len(solution)):
         # solution[i] = rnd.choices(c_major_scale, None, k=3)
-        solution[i] = chord((rnd.choices(c_major_scale, None, k=3)))
+        solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave()
 
     print(f'Initial Sol: {solution}')
     return solution
@@ -87,8 +98,12 @@ def create_population(population_size) -> [[]]:
     return pop
 
 
-def genetic_algorithm(pop_size, generations, tournament_size=2):
-    population = create_population(pop_size)
+def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=False):
+    if not testing_pop:
+        population = create_population(pop_size)
+    else:
+        population = test_population
+
     p_size = len(population)
     g = generations
     t = tournament_size
@@ -132,14 +147,22 @@ def tournament_selection(population, tournament_size):
 def crossover(parent_a, parent_b):
     a = parent_a
     b = parent_b
+    print('\n------------------------')
+    print(f'Parent A: {a}')
+    print(f'Parent B: {b}')
     length = len(parent_a)
 
     c = rnd.randint(1, length)
     if not c == 1:
-        for i in range(c,length):
+        print(f'Switching from {c} to {length}')
+        for i in range(c, length):
             tmp = a[i]
             a[i] = b[i]
             b[i] = tmp
+    print('------')
+    print(f'Child A: {a}')
+    print(f'Child B: {b}')
+    print('------')
     return a, b
 
 
@@ -154,6 +177,7 @@ def mutate(solution):
 def mutate_first_inversion(solution):
     length = len(solution)
     probability = 1 / length
+    # probability = -1
     random_no = rnd.uniform(0, 1)
     v = solution.copy()
 
@@ -165,7 +189,8 @@ def mutate_first_inversion(solution):
 
 def mutate_move_one_tone(solution):
     length = len(solution)
-    probability = 1 / length
+    # probability = 1 / length
+    probability = -1
     random_no = rnd.uniform(0, 1)
     v = solution.copy()
 
@@ -177,7 +202,8 @@ def mutate_move_one_tone(solution):
 
 def mutate_flip_quality(solution):
     length = len(solution)
-    probability = 1 / length
+    # probability = 1 / length
+    probability = -1
     random_no = rnd.uniform(0, 1)
     v = solution.copy()
 
@@ -311,14 +337,15 @@ def fitness(solution):
             #     if next_bar_check_fourth[1] == chord_to_compare_interval_next_bar:
             #         print(f'perfect fourth detected between root note of bar {b+1} and {b+2}')
             #         sol_fitness += 1
+        print(sol_fitness)
         return sol_fitness
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(30, 100)
+    sol = genetic_algorithm(10, 50, 2, testing_pop=True)
     while sol == [0]:
-        sol = genetic_algorithm(30, 100)
+        sol = genetic_algorithm(10, 50, 2, testing_pop=True)
 
     c1 = sol[0]
     c2 = sol[1]
