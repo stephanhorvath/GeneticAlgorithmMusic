@@ -78,15 +78,20 @@ test_population = [
     [chord('D4, G4, A4'), chord('D5, A5, B5'), chord('D3, F3, D4'), chord('G2, G2, A5'), chord('E3, E3, A4'), chord('C2, G2, B2'), chord('E3, G3, E4'), chord('D2, G4, E5')],
     [chord('F2, F3, G4'), chord('F4, B4, E5'), chord('D2, F2, D5'), chord('E3, D4, E4'), chord('B2, D4, E4'), chord('G3, F4, F5'), chord('C2, E2, B2'), chord('D2, A5, B5')]]
 
+for i in range(len(test_population)):
+    for j in range(len(test_population[i])):
+        test_population[i][j] = test_population[i][j].set(1, 0)
+
 
 def generate_solution() -> []:
     # solution = [rnd.choices(cmajor, None, k=32)]
     solution = [0] * 8
     for i in range(len(solution)):
         # solution[i] = rnd.choices(c_major_scale, None, k=3)
-        solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave()
+        solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave().set(1, 0)
 
     print(f'Initial Sol: {solution}')
+    solution = solution + solution + solution + solution
     return solution
 
 
@@ -122,8 +127,8 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=Fals
             parent_a = tournament_selection(population, t)
             parent_b = tournament_selection(population, t)
             child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
-            new_population.append(mutate(child_a))
-            new_population.append(mutate(child_b))
+            new_population.append(mutate_dot(child_a))
+            new_population.append(mutate_dot(child_b))
         population = new_population
         g -= 1
     print(best)
@@ -171,9 +176,9 @@ def crossover(parent_a, parent_b):
 # This function creates a list of all
 # the mutation functions and randomly selects
 # one, and returns that functions return value
-def mutate(solution):
-    func_list = [mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
-    return rnd.choice(func_list)(solution)
+# def mutate(solution):
+#     func_list = [mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
+#     return rnd.choice(func_list)(solution)
 
 
 def mutate_first_inversion(solution):
@@ -222,18 +227,18 @@ def mutate_flip_quality(solution):
     return v
 
 
-# def mutate_dot(solution):
-#     length = len(solution)
-#     probability = 1 / length
-#     random_no = rnd.uniform(0, 1)
-#     v = solution.copy()
-#
-#     for i in range(1, length):
-#         if probability >= random_no:
-#             random_note = rnd.choice
-#             random_note =  random_note.dotted()
-#
-#     return v
+def mutate_dot(solution):
+    length = len(solution)
+    probability = 1 / length
+    random_no = rnd.uniform(0, 1)
+    v = solution.copy()
+
+    for i in range(1, length):
+        if probability >= random_no:
+            random_note = rnd.choice(v[i])
+            random_note = random_note.dotted()
+
+    return v
 
 # def mutate_maj7(solution):
 #     length = len(solution)
