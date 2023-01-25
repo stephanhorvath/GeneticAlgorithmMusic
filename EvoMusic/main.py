@@ -67,7 +67,7 @@ c_major_scale = [C2, D2, E2, F2, G2, A2, B2,
                  C5, D5, E5, F5, G5, A5, B5]
 
 test_population = [
-    [chord('B2, A5, A5'), chord('D2, G3, G4'), chord('A2, B2, E3'), chord('D2, F3, F4'), chord('A2, F4, G5'), chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
+    [chord('C3, E3, G3'), chord('D2, G3, G4'), chord('A2, B2, E3'), chord('D2, F3, F4'), chord('A2, F4, G5'), chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
     [chord('D3, F3, B3'), chord('C3, B3, F5'), chord('B2, G3, C4'), chord('A3, C5, D5'), chord('C3, E3, E3'), chord('G3, E4, E4'), chord('D2, A2, A2'), chord('D2, C3, D3')],
     [chord('F2, E3, E3'), chord('B4, D5, D5'), chord('D4, E4, B4'), chord('C5, G5, B5'), chord('E2, G2, E3'), chord('E2, G3, A3'), chord('D4, F4, C5'), chord('C4, D4, G4')],
     [chord('B3, E5, F5'), chord('E2, F2, D3'), chord('C2, E2, B3'), chord('A4, D5, F5'), chord('G2, A2, C3'), chord('E3, G3, D4'), chord('A2, E4, A4'), chord('A3, D4, A4')],
