@@ -18,23 +18,22 @@ def fit_duplicate_tones(c) -> int:
     return 1
 
 
-def fit_perfect_fifth(chord) -> int:
-    split_track(chord)
-    notes = [0] * len(chord)
-    for n in range(len(chord)):
-        if n + 2 > len(chord) - 1:
+def fit_perfect_fifth(c) -> int:
+    notes = [0] * len(c)
+    for n in range(len(c)):
+        if n + 2 > len(c) - 1:
             pass
         else:
-            if compute_degree_separation(chord[n], chord[n+2]) == database.perfect_fifth:
+            if compute_degree_separation(c[n], c[n + 2]) == database.perfect_fifth:
                 return 3
     return -1
 
 
-def fit_minor_third(chord) -> int:
-    length = len(chord)
+def fit_minor_third(c) -> int:
+    length = len(c)
     degrees = [0] * length
     for n in range(length):
-        degrees[n] = chord[n].degree
+        degrees[n] = c[n].degree
 
     for i in range(length):
         if i + 1 >= length:
@@ -48,11 +47,11 @@ def fit_minor_third(chord) -> int:
     return 0
 
 
-def fit_major_third(chord) -> int:
-    length = len(chord)
+def fit_major_third(c) -> int:
+    length = len(c)
     degrees = [0] * length
     for n in range(length):
-        degrees[n] = chord[n].degree
+        degrees[n] = c[n].degree
 
     for i in range(length):
         if i + 1 >= length:
@@ -66,11 +65,11 @@ def fit_major_third(chord) -> int:
     return 0
 
 
-def fit_minor_second(chord) -> int:
-    length = len(chord)
+def fit_minor_second(c) -> int:
+    length = len(c)
     degrees = [0] * length
     for n in range(length):
-        degrees[n] = chord[n].degree
+        degrees[n] = c[n].degree
 
     for i in range(length):
         if i + 1 >= length:
@@ -84,11 +83,11 @@ def fit_minor_second(chord) -> int:
     return 0
 
 
-def fit_major_second(chord) -> int:
-    length = len(chord)
+def fit_major_second(c) -> int:
+    length = len(c)
     degrees = [0] * length
     for n in range(length):
-        degrees[n] = chord[n].degree
+        degrees[n] = c[n].degree
 
     for i in range(length):
         if i + 1 >= length:
@@ -102,120 +101,122 @@ def fit_major_second(chord) -> int:
     return 0
 
 
-def fit_triad(chord) -> int:
-    no_of_notes = len(chord)
+def fit_triad(c) -> int:
+    no_of_notes = len(c)
     if no_of_notes < 3:
         return 0
 
     for n in range(no_of_notes - 1):
         if (n + 1) > no_of_notes:
             return -1
-        elif ((chord[n].degree - chord[n + 1].degree) * -1 == database.minor_third or (
-                chord[n].degree - chord[n + 1].degree) * -1 == database.major_third) \
-                and (chord[n].degree - chord[n + 2].degree) * -1 == database.perfect_fifth:
+        elif ((c[n].degree - c[n + 1].degree) * -1 == database.minor_third or (
+                c[n].degree - c[n + 1].degree) * -1 == database.major_third) \
+                and (c[n].degree - c[n + 2].degree) * -1 == database.perfect_fifth:
             return 1
         else:
             return 0
 
 
 def fitness(solution):
+    if solution is None:
+        print("????")
+    s = solution.copy()
     sol_fitness = 0
     if solution == [0]:
         return sol_fitness
     else:
-        for b in solution:
-            notes = [0] * len(b)
+        for single_chord in s:
 
-            # check if proper chord was randomly created
-            if b in Chords:
+            # check if proper c was randomly created
+            if single_chord in Chords:
                 sol_fitness = sol_fitness + 1
 
-            sol_fitness = sol_fitness + fit_duplicate_tones(b)
-            sol_fitness = sol_fitness + fit_perfect_fifth(b)
-            sol_fitness = sol_fitness + fit_minor_third(b)
-            sol_fitness = sol_fitness + fit_major_third(b)
-            sol_fitness = sol_fitness + fit_major_second(b)
-            sol_fitness = sol_fitness + fit_major_second(b)
-            sol_fitness = sol_fitness + fit_triad(b)
+            sol_fitness = sol_fitness + fit_duplicate_tones(single_chord)
+            sol_fitness = sol_fitness + fit_perfect_fifth(single_chord)
+            sol_fitness = sol_fitness + fit_minor_third(single_chord)
+            sol_fitness = sol_fitness + fit_major_third(single_chord)
+            sol_fitness = sol_fitness + fit_major_second(single_chord)
+            sol_fitness = sol_fitness + fit_major_second(single_chord)
+            sol_fitness = sol_fitness + fit_triad(single_chord)
 
             # check for minor seconds
-            # for c in range(len(solution[b])):
-            #     if c + 1 > len(solution[b]) - 1:
+            # for c in range(len(solution[single_chord])):
+            #     if c + 1 > len(solution[single_chord]) - 1:
             #         pass
             #     else:
-            #         if (solution[b][c].degree - solution[b][c+1].degree) * -1 == database.minor_second:
+            #         if (solution[single_chord][c].degree - solution[single_chord][c+1].degree) * -1 == database.minor_second:
             #             sol_fitness -= 3
             #
             # # check that second note and third note are not further than an octave apart
-            # if solution[b][1].degree - solution[b][2].degree < 0:
+            # if solution[single_chord][1].degree - solution[single_chord][2].degree < 0:
             #     sol_fitness += 1
             #
             # # check that root note and second note are not a minor, nor major second apart
-            # if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_second:
+            # if ((solution[single_chord][0].degree - solution[single_chord][1].degree) * -1) == database.minor_second:
             #     sol_fitness -= 5
             #
-            # if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_second:
+            # if ((solution[single_chord][0].degree - solution[single_chord][1].degree) * -1) == database.major_second:
             #     sol_fitness -= 5
             #
-            # # check if first two notes of each chord in each bar
+            # # check if first two notes of each c in each bar
             # # are at the very least a minor or major third interval
-            # # as the basic function for every chord comes from this interval
-            # if ((solution[b][0].degree - solution[b][1].degree) * -1) == database.minor_third:
-            #     print(f'Minor third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+            # # as the basic function for every c comes from this interval
+            # if ((solution[single_chord][0].degree - solution[single_chord][1].degree) * -1) == database.minor_third:
+            #     print(f'Minor third detected on bar{single_chord+1} between root note {solution[single_chord][0]} and {solution[single_chord][1]}')
             #     sol_fitness += 3
-            # elif ((solution[b][0].degree - solution[b][1].degree) * -1) == database.major_third:
-            #     print(f'Major third detected on bar{b+1} between root note {solution[b][0]} and {solution[b][1]}')
+            # elif ((solution[single_chord][0].degree - solution[single_chord][1].degree) * -1) == database.major_third:
+            #     print(f'Major third detected on bar{single_chord+1} between root note {solution[single_chord][0]} and {solution[single_chord][1]}')
             #     sol_fitness += 3
             # else:
             #     pass
             #
             # # check if root and third note of triad are a perfect fifth apart
-            # if ((solution[b][0].degree - solution[b][2].degree) * -1) == database.perfect_fifth:
-            #     print(f'Perfect fifth detected on bar {b+1} between root note {solution[b][0]} and {solution[b][1]}')
+            # if ((solution[single_chord][0].degree - solution[single_chord][2].degree) * -1) == database.perfect_fifth:
+            #     print(f'Perfect fifth detected on bar {single_chord+1} between root note {solution[single_chord][0]} and {solution[single_chord][1]}')
             #     sol_fitness += 5
             #
             # # check if root and third interval are an octave or two apart
-            # if (solution[b][0].degree - solution[b][2].degree) == database.perfect_octave or (solution[b][0].degree - solution[b][1].degree) == (database.perfect_octave * 2):
+            # if (solution[single_chord][0].degree - solution[single_chord][2].degree) == database.perfect_octave or (solution[single_chord][0].degree - solution[single_chord][1].degree) == (database.perfect_octave * 2):
             #     sol_fitness -= 1
             #
             # # checks for basic inversions
             # # as they can be pleasing, but more checks should be made
-            # # for chord functions, as inversions change the function
-            # chord_to_compare = solution[b]
+            # # for c functions, as inversions change the function
+            # chord_to_compare = solution[single_chord]
             # chord_to_compare_1st_inversion = (chord_to_compare / 1)
             # chord_to_compare_2nd_inversion = (chord_to_compare / 2)
             # if chord_to_compare in Chords:
-            #     print(f'chord found in {b+1}th element!')
+            #     print(f'c found in {single_chord+1}th element!')
             #     sol_fitness += 1
             #
             # if chord_to_compare_1st_inversion in Chords:
-            #     print(f'first inversion found in {b+1}th element!')
+            #     print(f'first inversion found in {single_chord+1}th element!')
             #     sol_fitness += 1
             #
             # if chord_to_compare_2nd_inversion in Chords:
-            #     print(f'second inversion found in {b+1}th element!')
+            #     print(f'second inversion found in {single_chord+1}th element!')
             #     sol_fitness += 1
 
             # checks for a perfect fifth interval between a bar and the next bar
             # as a V-I progression is found in most western music
-            # if b+1 > len(solution)-1:
+            # if single_chord+1 > len(solution)-1:
             #     print("too far chief")
             # else:
-            #     next_bar_check_fifth = solution[b+1][0]
+            #     next_bar_check_fifth = solution[single_chord+1][0]
             #     next_bar_check_fifth = next_bar_check_fifth.with_interval(database.perfect_fifth)
             #     chord_to_compare_interval_next_bar = chord_to_compare[0]
             #     if next_bar_check_fifth[1] == chord_to_compare_interval_next_bar:
-            #         print(f'perfect fifth detected between root note of bar {b+1} and {b+2}')
+            #         print(f'perfect fifth detected between root note of bar {single_chord+1} and {single_chord+2}')
             #         sol_fitness += 1
             #
-            # if b+1 > len(solution)-1:
+            # if single_chord+1 > len(solution)-1:
             #     print("too far chief")
             # else:
-            #     next_bar_check_fourth = solution[b+1][0]
+            #     next_bar_check_fourth = solution[single_chord+1][0]
             #     next_bar_check_fourth = next_bar_check_fourth.with_interval(database.perfect_fourth)
             #     chord_to_compare_interval_next_bar = chord_to_compare[0]
             #     if next_bar_check_fourth[1] == chord_to_compare_interval_next_bar:
-            #         print(f'perfect fourth detected between root note of bar {b+1} and {b+2}')
+            #         print(f'perfect fourth detected between root note of bar {single_chord+1} and {single_chord+2}')
             #         sol_fitness += 1
         # print(sol_fitness)
         return sol_fitness

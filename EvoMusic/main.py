@@ -1,10 +1,10 @@
 from fitnesses import *
-import random as rnd
-
-import musicpy as mp
+from mutations import *
 from musicpy import database
 from musicpy.musicpy import N, C, play
 from musicpy.structures import chord
+import random as rnd
+import musicpy as mp
 
 C2 = 'C2'
 D2 = 'D2'
@@ -102,7 +102,7 @@ def generate_harmony() -> []:
     print(f'Initial Sol: {solution}')
     solution = solution + solution + solution + solution
     t = generate_track(solution)
-    return solution, t
+    return solution
 
 
 def generate_melody() -> []:
@@ -135,7 +135,7 @@ def create_population(population_size) -> [[]]:
     pop = []
 
     for i in range(psize):
-        pop.append(generate_harmony()[0])
+        pop.append(generate_harmony())
 
     return pop
 
@@ -154,6 +154,8 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=Fals
 
     while g <= generations:
         for individual in population:
+            if individual is None:
+                print("why is individual none?")
             individual_fitness = fitness(individual)
             best_fitness = fitness(best)
             if individual == best or individual_fitness > best_fitness:
@@ -163,8 +165,8 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=Fals
             parent_a = tournament_selection(population, t)
             parent_b = tournament_selection(population, t)
             child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
-            new_population.append(mutate_dot(child_a))
-            new_population.append(mutate_dot(child_b))
+            new_population.append(mutate(child_a))
+            new_population.append(mutate(child_b))
         population = new_population
         generation_log.append((g, best, fitness(best)))
         g += 1
@@ -210,96 +212,6 @@ def crossover(parent_a, parent_b):
     return a, b
 
 
-# This function creates a list of all
-# the mutation functions and randomly selects
-# one, and returns that functions return value
-# def mutate(solution):
-#     func_list = [mutate_sus2, mutate_sus4, mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
-#     return rnd.choice(func_list)(solution)
-
-
-def mutate_sus2(solution):
-    length = len(solution)
-    probability = 1 / length
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            v[i] = v[i].sus(2)
-
-
-def mutate_sus4(solution):
-    length = len(solution)
-    probability = 1 / length
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            v[i] = v[i].sus(4)
-
-
-def mutate_first_inversion(solution):
-    length = len(solution)
-    probability = 1 / length
-    # probability = -1
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            v[i] = v[i] / 1
-    return v
-
-
-def mutate_move_one_tone(solution):
-    length = len(solution)
-    # probability = 1 / length
-    probability = -1
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            v[i] = v[i] + 1
-    return v
-
-
-def mutate_flip_quality(solution):
-    length = len(solution)
-    # probability = 1 / length
-    probability = -1
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            if (v[i][0].degree - v[i][1].degree) * -1 == database.minor_third:
-                v[i][1] = v[i][1] + 1
-                print(f'Made minor third into major third')
-            elif (v[i][0].degree - v[i][1].degree) * -1 == database.major_third:
-                v[i][1] = v[i][1] - 1
-                print(f'Made major third into minor third')
-            else:
-                pass
-    return v
-
-
-def mutate_dot(solution):
-    length = len(solution)
-    probability = 1 / length
-    random_no = rnd.uniform(0, 1)
-    v = solution.copy()
-
-    for i in range(1, length):
-        if probability >= random_no:
-            random_note = rnd.choice(v[i])
-            random_note = random_note.dotted()
-
-    return v
-
-
 def generation_info_printer(generations):
     g = generations.copy()
 
@@ -309,19 +221,19 @@ def generation_info_printer(generations):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(15, 30, 5, testing_pop=False)
+    sol = genetic_algorithm(5, 5, 5, testing_pop=False)
     while sol == [0]:
-        sol = genetic_algorithm(15, 30, 5, testing_pop=False)
+        sol = genetic_algorithm(5, 5, 5, testing_pop=False)
 
-    melody = generate_melody()
-    m1 = melody[0]
-    m2 = melody[1]
-    m3 = melody[2]
-    m4 = melody[3]
-    m5 = melody[4]
-    m6 = melody[5]
-    m7 = melody[6]
-    m8 = melody[7]
+    # melody = generate_melody()
+    # m1 = melody[0]
+    # m2 = melody[1]
+    # m3 = melody[2]
+    # m4 = melody[3]
+    # m5 = melody[4]
+    # m6 = melody[5]
+    # m7 = melody[6]
+    # m8 = melody[7]
 
     c1 = sol[0]
     c2 = sol[1]
@@ -342,10 +254,16 @@ if __name__ == '__main__':
     # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
     C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
-    M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
-    p = mp.P(tracks=[C, M],
-             instruments=['Acoustic Grand Piano', 'Acoustic Guitar (nylon)'],
+    # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
+    # p = mp.P(tracks=[C, M],
+    #          instruments=['Acoustic Grand Piano', 'Acoustic Guitar (nylon)'],
+    #          bpm=100,
+    #          start_times=[0, 0],
+    #          track_names=['piano', 'guitar'])
+
+    p = mp.P(tracks=[C],
+             instruments=['Acoustic Grand Piano'],
              bpm=100,
-             start_times=[0, 0],
-             track_names=['piano', 'guitar'])
+             start_times=[0],
+             track_names=['piano'])
     play(p, wait=True)
