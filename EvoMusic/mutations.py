@@ -1,5 +1,5 @@
 import random as rnd
-
+import musicpy as mp
 from musicpy import database
 from musicpy.structures import chord
 from musicpy.musicpy import degree_to_note, C
@@ -9,9 +9,26 @@ from musicpy.musicpy import degree_to_note, C
 # the mutation functions and randomly selects
 # one, and returns that functions return value
 def mutate(solution):
-    func_list = [mutate_sus2, mutate_sus4, mutate_add_7, mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
-    # func_list = [mutate_add_7]
+    # func_list = [mutate_sus2, mutate_sus4, mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
+    func_list = [mutate_rhythm]
     return rnd.choice(func_list)(solution)
+
+
+def mutate_rhythm(solution):
+    length = len(solution)
+    probability = 1 / length
+    random_no = rnd.uniform(0, 1)
+    random_index = rnd.choice(range(length))
+    v = solution.copy()
+
+    for i in range(0, random_index):
+        if probability >= random_no:
+            if len(v[i]) <= 3:
+                c = v[i]
+                v[i] = c.set(0.375, 0) | c.set(0.0625) | mp.rest(duration=0.125, dotted=None) | c.set(0.125, 0) | mp.rest(duration=0.125, dotted=None)
+            else:
+                pass
+    return v
 
 
 def mutate_sus2(solution):
@@ -39,6 +56,7 @@ def mutate_sus4(solution):
 
     return v
 
+
 def mutate_add_7(solution):
     length = len(solution)
     probability = 1 / length
@@ -51,7 +69,7 @@ def mutate_add_7(solution):
 
     if probability >= random_no and len(triad) <= 3:
         seven_chord = triad_root('7')
-        v[random_choice] = seven_chord
+        v[random_choice] = seven_chord.set(0.75, 0) | mp.rest(duration=1 / 4, dotted=None)
 
     return v
 
