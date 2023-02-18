@@ -59,26 +59,25 @@ Bm5 = chord('B5, D6, F6')
 
 Chords = [CM3, Dm3, Em3, FM4, GM4, Am4, Bm4, CM4, Dm4, Em4, FM5, GM5, Am5, Bm5]
 
-c_major_scale = [C2, D2, E2, F2, G2, A2, B2,
-                 C3, D3, E3, F3, G3, A3, B3,
+c_major_scale = [C3, D3, E3, F3, G3, A3, B3,
                  C4, D4, E4, F4, G4, A4, B4,
                  C5, D5, E5, F5, G5, A5, B5]
 
 test_population = [
-    [chord('C3, E3, G3'), chord('D2, G3, G4'), chord('A2, B2, E3'), chord('D2, F3, F4'), chord('A2, F4, G5'),
+    [chord('D3, F3, A3'), chord('G3, B3, D4'), chord('C3, E3, G3'), chord('D3, F3, F4'), chord('A3, F4, G5'),
      chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
-    [chord('D3, F3, B3'), chord('C3, B3, F5'), chord('B2, G3, C4'), chord('A3, C5, D5'), chord('C3, E3, E3'),
-     chord('G3, E4, E4'), chord('D2, A2, A2'), chord('D2, C3, D3')],
-    [chord('F2, E3, E3'), chord('B4, D5, D5'), chord('D4, E4, B4'), chord('C5, G5, B5'), chord('E2, G2, E3'),
-     chord('E2, G3, A3'), chord('D4, F4, C5'), chord('C4, D4, G4')],
-    [chord('B3, E5, F5'), chord('E2, F2, D3'), chord('C2, E2, B3'), chord('A4, D5, F5'), chord('G2, A2, C3'),
-     chord('E3, G3, D4'), chord('A2, E4, A4'), chord('A3, D4, A4')],
-    [chord('A3, B3, A4'), chord('F2, A2, B2'), chord('F2, C3, B4'), chord('F3, G3, C4'), chord('G3, C4, E4'),
-     chord('F2, G2, C3'), chord('D3, E3, E3'), chord('G2, B2, D4')],
-    [chord('B3, E4, A4'), chord('D2, B2, D3'), chord('E3, D4, G4'), chord('E3, E5, E5'), chord('D2, E4, D5'),
-     chord('C3, G3, A3'), chord('D3, F4, E5'), chord('B2, F3, F3')],
-    [chord('C2, G2, B2'), chord('A3, B3, G4'), chord('A2, C4, E4'), chord('F3, A3, D4'), chord('A2, C3, B3'),
-     chord('E2, F2, C3'), chord('A2, C5, B5'), chord('D2, E2, C3')],
+    [chord('D3, F3, B3'), chord('C3, B3, F5'), chord('B3, G3, C4'), chord('A3, C5, D5'), chord('C3, E3, E3'),
+     chord('G3, E4, E4'), chord('D3, A3, A3'), chord('D3, C3, D3')],
+    [chord('F3, E3, E3'), chord('B4, D5, D5'), chord('D4, E4, B4'), chord('C5, G5, B5'), chord('E3, G3, E3'),
+     chord('E3, G3, A3'), chord('D4, F4, C5'), chord('C4, D4, G4')],
+    [chord('B3, E5, F5'), chord('E3, F3, D3'), chord('C3, E3, B3'), chord('A4, D5, F5'), chord('G3, A3, C3'),
+     chord('E3, G3, D4'), chord('A3, E4, A4'), chord('A3, D4, A4')],
+    [chord('A3, B3, A4'), chord('F3, A3, B3'), chord('F3, C3, B4'), chord('F3, G3, C4'), chord('G3, C4, E4'),
+     chord('F3, G3, C3'), chord('D3, E3, E3'), chord('G3, B3, D4')],
+    [chord('B3, E4, A4'), chord('D3, B3, D3'), chord('E3, D4, G4'), chord('E3, E5, E5'), chord('D3, E4, D5'),
+     chord('C3, G3, A3'), chord('D3, F4, E5'), chord('B3, F3, F3')],
+    [chord('C3, G3, B3'), chord('A3, B3, G4'), chord('A3, C4, E4'), chord('F3, A3, D4'), chord('A3, C3, B3'),
+     chord('E3, F3, C3'), chord('A3, C5, B5'), chord('D3, E3, C3')],
     [chord('E2, F2, B2'), chord('E2, A2, B2'), chord('G2, B2, F3'), chord('D2, A2, D3'), chord('G2, B3, G4'),
      chord('B4, F5, A5'), chord('C2, G3, G4'), chord('E3, F3, D4')],
     [chord('D4, G4, A4'), chord('D5, A5, B5'), chord('D3, F3, D4'), chord('G2, G2, A5'), chord('E3, E3, A4'),
@@ -96,8 +95,9 @@ def generate_harmony() -> []:
     solution = [0] * 8
     for i in range(len(solution)):
         # solution[i] = rnd.choices(c_major_scale, None, k=3)
-        solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
-                                                                                                       dotted=None)
+        # solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
+        #                                                                                                dotted=None)
+        solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1/4, dotted=None)
 
     print(f'Initial Sol: {solution}')
     solution = solution + solution + solution + solution
@@ -221,19 +221,19 @@ def generation_info_printer(generations):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(5, 5, 5, testing_pop=False)
+    sol = genetic_algorithm(10, 10, 5, testing_pop=False)
     while sol == [0]:
-        sol = genetic_algorithm(5, 5, 5, testing_pop=False)
+        sol = genetic_algorithm(10, 10, 5, testing_pop=False)
 
-    # melody = generate_melody()
-    # m1 = melody[0]
-    # m2 = melody[1]
-    # m3 = melody[2]
-    # m4 = melody[3]
-    # m5 = melody[4]
-    # m6 = melody[5]
-    # m7 = melody[6]
-    # m8 = melody[7]
+    melody = generate_melody()
+    m1 = melody[0]
+    m2 = melody[1]
+    m3 = melody[2]
+    m4 = melody[3]
+    m5 = melody[4]
+    m6 = melody[5]
+    m7 = melody[6]
+    m8 = melody[7]
 
     c1 = sol[0]
     c2 = sol[1]
@@ -243,27 +243,27 @@ if __name__ == '__main__':
     c6 = sol[5]
     c7 = sol[6]
     c8 = sol[7]
-    c9 = sol[8]
-    c10 = sol[9]
-    c11 = sol[10]
-    c12 = sol[11]
-    c13 = sol[12]
-    c14 = sol[13]
-    c15 = sol[14]
-    c16 = sol[15]
+    # c9 = sol[8]
+    # c10 = sol[9]
+    # c11 = sol[10]
+    # c12 = sol[11]
+    # c13 = sol[12]
+    # c14 = sol[13]
+    # c15 = sol[14]
+    # c16 = sol[15]
     # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
     C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
     # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
     # p = mp.P(tracks=[C, M],
-    #          instruments=['Acoustic Grand Piano', 'Acoustic Guitar (nylon)'],
+    #          instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
     #          bpm=100,
     #          start_times=[0, 0],
     #          track_names=['piano', 'guitar'])
 
     p = mp.P(tracks=[C],
              instruments=['Acoustic Grand Piano'],
-             bpm=100,
+             bpm=120,
              start_times=[0],
              track_names=['piano'])
     play(p, wait=True)
