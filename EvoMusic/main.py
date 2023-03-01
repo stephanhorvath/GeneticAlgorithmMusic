@@ -64,7 +64,7 @@ c_major_scale = [C3, D3, E3, F3, G3, A3, B3,
                  C5, D5, E5, F5, G5, A5, B5]
 
 test_population = [
-    [chord('D3, F3, A3'), chord('G3, B3, D4'), chord('C3, E3, G3'), chord('D3, F3, F4'), chord('A3, F4, G5'),
+    [chord('C3, E3, G4'), chord('F3, A3, C4'), chord('G3, B3, D3'), chord('C3, E3, G4'), chord('A3, F4, G5'),
      chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
     [chord('D3, F3, B3'), chord('C3, B3, F5'), chord('B3, G3, C4'), chord('A3, C5, D5'), chord('C3, E3, E3'),
      chord('G3, E4, E4'), chord('D3, A3, A3'), chord('D3, C3, D3')],
@@ -140,7 +140,7 @@ def create_population(population_size) -> [[]]:
     return pop
 
 
-def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=False):
+def genetic_algorithm(pop_size, generations, tournament_size=2, genre="jazz", testing_pop=False):
     if not testing_pop:
         population = create_population(pop_size)
     else:
@@ -156,25 +156,25 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, testing_pop=Fals
         for individual in population:
             if individual is None:
                 print("why is individual none?")
-            individual_fitness = fitness(individual)
-            best_fitness = fitness(best)
+            individual_fitness = fitness(individual, genre)
+            best_fitness = fitness(best, genre)
             if individual == best or individual_fitness > best_fitness:
                 best = individual
         new_population = []
         for i in range(int(p_size / 2)):
-            parent_a = tournament_selection(population, t)
-            parent_b = tournament_selection(population, t)
+            parent_a = tournament_selection(population, t, genre)
+            parent_b = tournament_selection(population, t, genre)
             child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
             new_population.append(mutate(child_a))
             new_population.append(mutate(child_b))
         population = new_population
-        generation_log.append((g, best, fitness(best)))
+        generation_log.append((g, best, fitness(best, genre)))
         g += 1
     generation_info_printer(generation_log)
     return best
 
 
-def tournament_selection(population, tournament_size):
+def tournament_selection(population, tournament_size, genre):
     p = population
     pop_size = len(population)
     t_size = 1
@@ -185,7 +185,7 @@ def tournament_selection(population, tournament_size):
 
     for i in range(2, t_size):
         next_individual = rnd.choice(p)
-        if fitness(next_individual) > fitness(best):
+        if fitness(next_individual, genre) > fitness(best, genre):
             best = next_individual
     return best
 
@@ -221,9 +221,9 @@ def generation_info_printer(generations):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(10, 10, 5, testing_pop=False)
+    sol = genetic_algorithm(10, 10, 5, "jazz", testing_pop=True)
     while sol == [0]:
-        sol = genetic_algorithm(10, 10, 5, testing_pop=False)
+        sol = genetic_algorithm(10, 10, 5, "jazz", testing_pop=False)
 
     melody = generate_melody()
     m1 = melody[0]
@@ -254,16 +254,16 @@ if __name__ == '__main__':
     # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
     C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
-    # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
-    # p = mp.P(tracks=[C, M],
-    #          instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
-    #          bpm=100,
-    #          start_times=[0, 0],
-    #          track_names=['piano', 'guitar'])
+    M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
+    p = mp.P(tracks=[C, M],
+             instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
+             bpm=100,
+             start_times=[0, 0],
+             track_names=['piano', 'guitar'])
 
-    p = mp.P(tracks=[C],
-             instruments=['Acoustic Grand Piano'],
-             bpm=120,
-             start_times=[0],
-             track_names=['piano'])
+    # p = mp.P(tracks=[C],
+    #          instruments=['Acoustic Grand Piano'],
+    #          bpm=120,
+    #          start_times=[0],
+    #          track_names=['piano'])
     play(p, wait=True)
