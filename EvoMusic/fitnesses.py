@@ -13,11 +13,10 @@ def fit_duplicate_tones(c) -> int:
         if i + 2 > c_length:
             pass
         else:
-            if compare_without_octave(c[i], c[i + 1]) or compare_without_octave(c[i],
-                                                                                c[i + 2]) or compare_without_octave(
-                    c[i + 1], c[i + 2]):
-                return -5
-    return 1
+            if compare_without_octave(c[i], c[i + 1]) or compare_without_octave(c[i], c[i + 2]) or\
+                    compare_without_octave(c[i + 1], c[i + 2]):
+                return -10
+    return 2
 
 
 def fit_perfect_fifth(c) -> int:
@@ -45,7 +44,7 @@ def fit_minor_third(c) -> int:
             degrees[i + 1] = degrees[i + 1] - 12
 
         if (degrees[i] - degrees[i + 1]) * -1 == database.minor_third:
-            return 1
+            return 2
     return 0
 
 
@@ -63,7 +62,7 @@ def fit_major_third(c) -> int:
             degrees[i + 1] = degrees[i + 1] - 12
 
         if (degrees[i] - degrees[i + 1]) * -1 == database.major_third:
-            return 1
+            return 2
     return 0
 
 
@@ -81,7 +80,7 @@ def fit_minor_second(c) -> int:
             degrees[i + 1] = degrees[i + 1] - 12
 
         if (degrees[i] - degrees[i + 1]) * -1 == database.minor_second:
-            return -1
+            return -5
     return 0
 
 
@@ -99,7 +98,7 @@ def fit_major_second(c) -> int:
             degrees[i + 1] = degrees[i + 1] - 12
 
         if (degrees[i] - degrees[i + 1]) * -1 == database.major_second:
-            return -1
+            return -5
     return 0
 
 
@@ -122,16 +121,14 @@ def fit_triad(c) -> int:
 def fitness_ii_V_I(root_notes) -> True | False:
     notes_list = root_notes
 
-    if compare_without_octave(root_notes[0], N('D3')) and compare_without_octave(root_notes[1],
-                                                                                 N('G3')) and compare_without_octave(
-            root_notes[2], N('C3')):
+    if compare_without_octave(root_notes[0], N('D3')) and compare_without_octave(root_notes[1], N('G3')) and \
+            compare_without_octave(root_notes[2], N('C3')) and compare_without_octave(root_notes[3], N('C3')):
         return True
     else:
         return False
 
 
 def fitness_I_IV_V_I(root_notes) -> True | False:
-    notes_list = root_notes
 
     if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('F3')) and \
             compare_without_octave(root_notes[2], N('G3')) and compare_without_octave(root_notes[3], N('C3')):
@@ -140,7 +137,16 @@ def fitness_I_IV_V_I(root_notes) -> True | False:
         return False
 
 
-def fitness_chord_progression_window(solution, window_size=3):
+def fitness_I_V_vi_IV(root_notes) -> True | False:
+
+    if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('G3')) and \
+            compare_without_octave(root_notes[2], N('A3')) and compare_without_octave(root_notes[3], N('F3')):
+        return True
+    else:
+        return False
+
+
+def fitness_chord_progression_window(solution, window_size=4):
     s = solution.copy()
     w = window_size
     found_ii_V_i = False
@@ -150,32 +156,24 @@ def fitness_chord_progression_window(solution, window_size=3):
         return 0
 
     for i in range(len(s) - w + 1):
-        if window_size is 3:
-            chord_progression_bar_1 = s[i]
-            root_1 = chord_progression_bar_1[0]
-            chord_progression_bar_2 = s[i + 1]
-            root_2 = chord_progression_bar_2[0]
-            chord_progression_bar_3 = s[i + w - 1]
-            root_3 = chord_progression_bar_3[0]
-            roots = [root_1, root_2, root_3]
+        chord_progression_bar_1 = s[i]
+        root_1 = chord_progression_bar_1[0]
+        chord_progression_bar_2 = s[i + 1]
+        root_2 = chord_progression_bar_2[0]
+        chord_progression_bar_3 = s[i + w - 1]
+        root_3 = chord_progression_bar_3[0]
+        chord_progression_bar_4 = s[i + w - 1]
+        root_4 = chord_progression_bar_4[0]
+        roots = [root_1, root_2, root_3, root_4]
 
-            if fitness_ii_V_I(roots):
-                found_ii_V_i = True
+        if fitness_ii_V_I(roots):
+            found_ii_V_i = True
 
-        elif window_size is 4:
-            chord_progression_bar_1 = s[i]
-            root_1 = chord_progression_bar_1[0]
-            chord_progression_bar_2 = s[i + 1]
-            root_2 = chord_progression_bar_2[0]
-            chord_progression_bar_3 = s[i + w - 2]
-            root_3 = chord_progression_bar_3[0]
-            chord_progression_bar_4 = s[i + w - 1]
-            root_4 = chord_progression_bar_4[0]
-            roots = [root_1, root_2, root_3, root_4]
-            if fitness_I_IV_V_I(roots):
-                found_I_IV_V_I = True
+        if fitness_I_IV_V_I(roots):
+            found_I_IV_V_I = True
+
         if found_ii_V_i or found_I_IV_V_I:
-            return 10000
+            return 10
     else:
         return 0
 
@@ -207,9 +205,9 @@ def fitness(solution, genre):
             if single_chord in Chords:
                 sol_fitness = sol_fitness + 1
 
-            if genre is "jazz":
+            if genre == "jazz":
                 sol_fitness = sol_fitness + jazz_fitnesses_list(single_chord, 0)
-            elif genre is "rock":
+            elif genre == "rock":
                 print("rock")
                 # sol_fitness = sol_fitness + rock_fitnesses_list(single_chord, 0)
 
