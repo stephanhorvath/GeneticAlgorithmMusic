@@ -221,9 +221,44 @@ def generation_info_printer(generations):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    sol = genetic_algorithm(10, 10, 5, "jazz", testing_pop=True)
+
+    pop_size = input("Enter desired population size (max 30): ")
+    while not pop_size.isnumeric():
+        print("Invalid input, please try again.")
+        pop_size = input("Enter desired population size: ")
+    while int(pop_size) > 30:
+        print("Input too large. Maximum population is 30.")
+        pop_size = input("Enter desired population size: ")
+
+    gen_size = input("Enter desired number of generations (max 50): ")
+    while not gen_size.isnumeric():
+        print("Invalid input, please try again.")
+        gen_size = input("Enter desired number of generations (max 50): ")
+    while int(gen_size) > 50:
+        print("Input too large. Maximum generations is 50.")
+        gen_size = input("Enter desired population size: ")
+
+    tournament_size = input("Enter selection tournament size (cannot be bigger than population size): ")
+    while not tournament_size.isnumeric():
+        print("Invalid input, please try again.")
+        tournament_size = input("Enter selection tournament size: ")
+    while int(tournament_size) > int(pop_size) or int(tournament_size) < 2:
+        print(f'Invalid input. Tournament must be number in range from 2 to {pop_size}')
+        tournament_size = input("Enter selection tournament size: ")
+
+    jazz_or_rock = input("Enter 'j' for jazz, or 'r' for rock: ")
+
+    while jazz_or_rock not in {'j', 'J', 'r', 'R'}:
+        jazz_or_rock = input("Invalid input. Enter 'j' for jazz, or 'r' for rock: ")
+
+    if jazz_or_rock in {'j', 'J'}:
+        jazz_or_rock = "jazz"
+    elif jazz_or_rock in {'r', 'R'}:
+        jazz_or_rock = "rock"
+
+    sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), jazz_or_rock, testing_pop=False)
     while sol == [0]:
-        sol = genetic_algorithm(10, 10, 5, "jazz", testing_pop=False)
+        sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), jazz_or_rock, testing_pop=False)
 
     melody = generate_melody()
     m1 = melody[0]
@@ -254,16 +289,16 @@ if __name__ == '__main__':
     # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
     C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
-    M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
-    p = mp.P(tracks=[C, M],
-             instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
-             bpm=100,
-             start_times=[0, 0],
-             track_names=['piano', 'guitar'])
+    # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
+    # p = mp.P(tracks=[C, M],
+    #          instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
+    #          bpm=100,
+    #          start_times=[0, 0],
+    #          track_names=['piano', 'guitar'])
 
-    # p = mp.P(tracks=[C],
-    #          instruments=['Acoustic Grand Piano'],
-    #          bpm=120,
-    #          start_times=[0],
-    #          track_names=['piano'])
+    p = mp.P(tracks=[C],
+             instruments=['Acoustic Grand Piano'],
+             bpm=80,
+             start_times=[0],
+             track_names=['piano'])
     play(p, wait=True)

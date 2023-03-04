@@ -25,7 +25,9 @@ def mutate_rhythm(solution):
         if probability >= random_no:
             if len(v[i]) <= 3:
                 c = v[i]
-                v[i] = c.set(0.375, 0) | c.set(0.0625) | mp.rest(duration=0.125, dotted=None) | c.set(0.125, 0) | mp.rest(duration=0.125, dotted=None)
+                v[i] = c.set(0.375, 0) | c.set(0.0625) | mp.rest(duration=0.125, dotted=None) | c.set(0.125, 0) | \
+                       mp.rest(duration=0.125, dotted=None)
+                # v[i] = c.set(0.375, 0) | c.set(0.125) | mp.rest(duration=0.5, dotted=None)
             else:
                 pass
     return v
