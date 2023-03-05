@@ -100,7 +100,7 @@ def generate_harmony() -> []:
         solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1/4, dotted=None)
 
     print(f'Initial Sol: {solution}')
-    solution = solution + solution + solution + solution
+    # solution = solution + solution + solution + solution
     t = generate_track(solution)
     return solution
 
@@ -155,7 +155,7 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, genre="jazz", te
     while g <= generations:
         for individual in population:
             if individual is None:
-                print("why is individual none?")
+                print("Check mutations for functions without return")
             individual_fitness = fitness(individual, genre)
             best_fitness = fitness(best, genre)
             if individual == best or individual_fitness > best_fitness:
@@ -164,7 +164,7 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, genre="jazz", te
         for i in range(int(p_size / 2)):
             parent_a = tournament_selection(population, t, genre)
             parent_b = tournament_selection(population, t, genre)
-            child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
+            child_a, child_b = uniform_crossover(parent_a.copy(), parent_b.copy())
             new_population.append(mutate(child_a))
             new_population.append(mutate(child_b))
         population = new_population
@@ -194,20 +194,48 @@ def crossover(parent_a, parent_b):
     a = parent_a
     b = parent_b
     print('\n------------------------')
-    print(f'Parent A: {a}')
-    print(f'Parent B: {b}')
+    print(f'Parent A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Parent B: fitness: {fitness(b, "jazz")} {b}')
     length = len(parent_a)
 
     c = rnd.randint(1, length)
-    if not c == 1:
-        print(f'Switching from {c} to {length}')
-        for i in range(c, length):
+    d = rnd.randint(1, length)
+    if c > d:
+        temp = c
+        c = d
+        d = temp
+
+    print(f'Swapping from index {c} to {d}')
+    if c != d:
+        for i in range(c, d-1):
             tmp = a[i]
             a[i] = b[i]
             b[i] = tmp
     print('------')
-    print(f'Child A: {a}')
-    print(f'Child B: {b}')
+    print(f'Child A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Child B: fitness: {fitness(b, "jazz")} {b}')
+    print('------')
+    return a, b
+
+
+def uniform_crossover(parent_a, parent_b):
+    a = parent_a
+    b = parent_b
+    length = len(a)
+    p = 1 / length
+    print('\n------------------------')
+    print(f'Parent A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Parent B: fitness: {fitness(b, "jazz")} {b}')
+
+    for i in range(length):
+        r = rnd.uniform(0, 1)
+        if p >= r:
+            tmp = a[i]
+            a[i] = b[i]
+            b[i] = tmp
+    print('------')
+    print(f'Child A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Child B: fitness: {fitness(b, "jazz")} {b}')
     print('------')
     return a, b
 
@@ -226,7 +254,7 @@ if __name__ == '__main__':
     while not pop_size.isnumeric():
         print("Invalid input, please try again.")
         pop_size = input("Enter desired population size: ")
-    while int(pop_size) > 30:
+    while int(pop_size) > 100:
         print("Input too large. Maximum population is 30.")
         pop_size = input("Enter desired population size: ")
 
