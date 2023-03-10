@@ -85,6 +85,8 @@ test_population = [
     [chord('F2, F3, G4'), chord('F4, B4, E5'), chord('D2, F2, D5'), chord('E3, D4, E4'), chord('B2, D4, E4'),
      chord('G3, F4, F5'), chord('C2, E2, B2'), chord('D2, A5, B5')]]
 
+global_genre = "jazz"
+
 for i in range(len(test_population)):
     for j in range(len(test_population[i])):
         test_population[i][j] = test_population[i][j].set(1, 0)
@@ -100,7 +102,7 @@ def generate_harmony() -> []:
         solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1/4, dotted=None)
 
     print(f'Initial Sol: {solution}')
-    solution = solution + solution + solution + solution
+    # solution = solution + solution + solution + solution
     t = generate_track(solution)
     return solution
 
@@ -155,26 +157,26 @@ def genetic_algorithm(pop_size, generations, tournament_size=2, genre="jazz", te
     while g <= generations:
         for individual in population:
             if individual is None:
-                print("why is individual none?")
-            individual_fitness = fitness(individual, genre)
-            best_fitness = fitness(best, genre)
+                print("Check mutations for functions without return")
+            individual_fitness = fitness(individual, global_genre)
+            best_fitness = fitness(best, global_genre)
             if individual == best or individual_fitness > best_fitness:
                 best = individual
         new_population = []
         for i in range(int(p_size / 2)):
-            parent_a = tournament_selection(population, t, genre)
-            parent_b = tournament_selection(population, t, genre)
-            child_a, child_b = crossover(parent_a.copy(), parent_b.copy())
+            parent_a = tournament_selection(population, t, global_genre)
+            parent_b = tournament_selection(population, t, global_genre)
+            child_a, child_b = uniform_crossover(parent_a.copy(), parent_b.copy())
             new_population.append(mutate(child_a))
             new_population.append(mutate(child_b))
         population = new_population
-        generation_log.append((g, best, fitness(best, genre)))
+        generation_log.append((g, best, fitness(best, global_genre)))
         g += 1
     generation_info_printer(generation_log)
     return best
 
 
-def tournament_selection(population, tournament_size, genre):
+def tournament_selection(population, tournament_size, global_genre):
     p = population
     pop_size = len(population)
     t_size = 1
@@ -185,7 +187,7 @@ def tournament_selection(population, tournament_size, genre):
 
     for i in range(2, t_size):
         next_individual = rnd.choice(p)
-        if fitness(next_individual, genre) > fitness(best, genre):
+        if fitness(next_individual, global_genre) > fitness(best, global_genre):
             best = next_individual
     return best
 
@@ -194,20 +196,48 @@ def crossover(parent_a, parent_b):
     a = parent_a
     b = parent_b
     print('\n------------------------')
-    print(f'Parent A: {a}')
-    print(f'Parent B: {b}')
+    print(f'Parent A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Parent B: fitness: {fitness(b, "jazz")} {b}')
     length = len(parent_a)
 
     c = rnd.randint(1, length)
-    if not c == 1:
-        print(f'Switching from {c} to {length}')
-        for i in range(c, length):
+    d = rnd.randint(1, length)
+    if c > d:
+        temp = c
+        c = d
+        d = temp
+
+    print(f'Swapping from index {c} to {d}')
+    if c != d:
+        for i in range(c, d-1):
             tmp = a[i]
             a[i] = b[i]
             b[i] = tmp
     print('------')
-    print(f'Child A: {a}')
-    print(f'Child B: {b}')
+    print(f'Child A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Child B: fitness: {fitness(b, "jazz")} {b}')
+    print('------')
+    return a, b
+
+
+def uniform_crossover(parent_a, parent_b):
+    a = parent_a
+    b = parent_b
+    length = len(a)
+    p = 1 / length
+    print('\n------------------------')
+    print(f'Parent A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Parent B: fitness: {fitness(b, "jazz")} {b}')
+
+    for i in range(length):
+        r = rnd.uniform(0, 1)
+        if p >= r:
+            tmp = a[i]
+            a[i] = b[i]
+            b[i] = tmp
+    print('------')
+    print(f'Child A: fitness: {fitness(a, "jazz")} {a}')
+    print(f'Child B: fitness: {fitness(b, "jazz")} {b}')
     print('------')
     return a, b
 
@@ -219,14 +249,12 @@ def generation_info_printer(generations):
         print(f'Generation: {a[0]} - Best Solution: {a[1]} - Fitness: {a[2]}')
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-
+def algorithm_parameter_input() -> ():
     pop_size = input("Enter desired population size (max 30): ")
     while not pop_size.isnumeric():
         print("Invalid input, please try again.")
         pop_size = input("Enter desired population size: ")
-    while int(pop_size) > 30:
+    while int(pop_size) > 100:
         print("Input too large. Maximum population is 30.")
         pop_size = input("Enter desired population size: ")
 
@@ -246,19 +274,51 @@ if __name__ == '__main__':
         print(f'Invalid input. Tournament must be number in range from 2 to {pop_size}')
         tournament_size = input("Enter selection tournament size: ")
 
-    jazz_or_rock = input("Enter 'j' for jazz, or 'r' for rock: ")
+    global_genre = input("Enter 'j' for jazz, or 'r' for rock: ")
 
-    while jazz_or_rock not in {'j', 'J', 'r', 'R'}:
-        jazz_or_rock = input("Invalid input. Enter 'j' for jazz, or 'r' for rock: ")
+    while global_genre not in {'j', 'J', 'r', 'R'}:
+        global_genre = input("Invalid input. Enter 'j' for jazz, or 'r' for rock: ")
 
-    if jazz_or_rock in {'j', 'J'}:
-        jazz_or_rock = "jazz"
-    elif jazz_or_rock in {'r', 'R'}:
-        jazz_or_rock = "rock"
+    if global_genre in {'j', 'J'}:
+        global_genre = "jazz"
+    elif global_genre in {'r', 'R'}:
+        global_genre = "rock"
 
-    sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), jazz_or_rock, testing_pop=False)
+    return pop_size, gen_size, tournament_size, global_genre
+
+
+def harmony_track_builder(sol):
+    C = 0
+    for c in sol:
+        if C == 0:
+            C = c
+        else:
+            C = C | c
+
+
+    return C
+
+
+def piece_composer(*args):
+    if global_genre == "jazz":
+        harmony = args[0]
+
+        p = mp.P(tracks=[harmony],
+                 instruments=['Acoustic Grand Piano'],
+                 bpm=80,
+                 start_times=[0],
+                 track_names=['jazz piano'])
+
+    return p
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+
+    pop_size, gen_size, tournament_size, global_genre = algorithm_parameter_input()
+
+    sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre , testing_pop=False)
     while sol == [0]:
-        sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), jazz_or_rock, testing_pop=False)
+        sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre , testing_pop=False)
 
     melody = generate_melody()
     m1 = melody[0]
@@ -270,24 +330,6 @@ if __name__ == '__main__':
     m7 = melody[6]
     m8 = melody[7]
 
-    c1 = sol[0]
-    c2 = sol[1]
-    c3 = sol[2]
-    c4 = sol[3]
-    c5 = sol[4]
-    c6 = sol[5]
-    c7 = sol[6]
-    c8 = sol[7]
-    # c9 = sol[8]
-    # c10 = sol[9]
-    # c11 = sol[10]
-    # c12 = sol[11]
-    # c13 = sol[12]
-    # c14 = sol[13]
-    # c15 = sol[14]
-    # c16 = sol[15]
-    # C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8 | c9 | c10 | c11 | c12 | c13 | c14 | c15 | c16 | c1
-    C = c1 | c2 | c3 | c4 | c5 | c6 | c7 | c8
     # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
     # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
     # p = mp.P(tracks=[C, M],
@@ -296,9 +338,10 @@ if __name__ == '__main__':
     #          start_times=[0, 0],
     #          track_names=['piano', 'guitar'])
 
-    p = mp.P(tracks=[C],
-             instruments=['Acoustic Grand Piano'],
-             bpm=80,
-             start_times=[0],
-             track_names=['piano'])
+    # p = mp.P(tracks=[C],
+    #          instruments=['Acoustic Grand Piano'],
+    #          bpm=80,
+    #          start_times=[0],
+    #          track_names=['piano'])
+    p = piece_composer(harmony_track_builder(sol))
     play(p, wait=True)

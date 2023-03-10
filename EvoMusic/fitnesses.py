@@ -113,9 +113,9 @@ def fit_triad(c) -> int:
         elif ((c[n].degree - c[n + 1].degree) * -1 == database.minor_third or (
                 c[n].degree - c[n + 1].degree) * -1 == database.major_third) \
                 and (c[n].degree - c[n + 2].degree) * -1 == database.perfect_fifth:
-            return 50
+            return 5
         else:
-            return 0
+            return -1
 
 
 def fitness_ii_V_I(root_notes) -> True | False:
