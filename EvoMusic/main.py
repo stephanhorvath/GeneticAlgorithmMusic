@@ -6,6 +6,11 @@ from musicpy.structures import chord
 import random as rnd
 import musicpy as mp
 
+E1 = 'E2'
+F1 = 'F2'
+G1 = 'G2'
+A1 = 'A2'
+B1 = 'B2'
 C2 = 'C2'
 D2 = 'D2'
 E2 = 'E2'
@@ -63,6 +68,10 @@ c_major_scale = [C3, D3, E3, F3, G3, A3, B3,
                  C4, D4, E4, F4, G4, A4, B4,
                  C5, D5, E5, F5, G5, A5, B5]
 
+bass_notes = [E1, F1, G1, A1, B1, C2, D2,
+              E2, F2, G2, A2, B2, C3, D3,
+              E3, F3, G3, A3, B3, C4, D4, E4]
+
 test_population = [
     [chord('C3, E3, G4'), chord('F3, A3, C4'), chord('G3, B3, D3'), chord('C3, E3, G4'), chord('A3, F4, G5'),
      chord('E3, C4, E4'), chord('B3, C4, F4'), chord('G4, E5, B5')],
@@ -99,7 +108,8 @@ def generate_harmony() -> []:
         # solution[i] = rnd.choices(c_major_scale, None, k=3)
         # solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
         #                                                                                                dotted=None)
-        solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1/4, dotted=None)
+        solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
+                                                                                                dotted=None)
 
     print(f'Initial Sol: {solution}')
     # solution = solution + solution + solution + solution
@@ -122,6 +132,15 @@ def generate_melody() -> []:
 
     solution = pattern_1 + pattern_2
     return solution
+
+
+def generate_bassline():
+    bass_line = [0] * 8
+    for i in range(len(bass_line)):
+        bass_line[i] = N(rnd.choice(bass_line))
+
+    print(f'Initial Sol: {bass_line}')
+    return bass_line
 
 
 def generate_track(chords):
@@ -209,7 +228,7 @@ def crossover(parent_a, parent_b):
 
     print(f'Swapping from index {c} to {d}')
     if c != d:
-        for i in range(c, d-1):
+        for i in range(c, d - 1):
             tmp = a[i]
             a[i] = b[i]
             b[i] = tmp
@@ -251,27 +270,19 @@ def generation_info_printer(generations):
 
 def algorithm_parameter_input() -> ():
     pop_size = input("Enter desired population size (max 30): ")
-    while not pop_size.isnumeric():
-        print("Invalid input, please try again.")
-        pop_size = input("Enter desired population size: ")
-    while int(pop_size) > 100:
-        print("Input too large. Maximum population is 30.")
+    while not pop_size.isnumeric() or not int(pop_size) % 2 == 0 or not 5 <= int(pop_size) <= 100:
+        print("Invalid input. Population size must be an even number between 10 and 100.")
         pop_size = input("Enter desired population size: ")
 
     gen_size = input("Enter desired number of generations (max 50): ")
-    while not gen_size.isnumeric():
-        print("Invalid input, please try again.")
-        gen_size = input("Enter desired number of generations (max 50): ")
-    while int(gen_size) > 50:
-        print("Input too large. Maximum generations is 50.")
+    while not gen_size.isnumeric() or not 5 <= int(gen_size) <= 50:
+        print("Invalid input. Generation size must be between 5 and 50.")
         gen_size = input("Enter desired population size: ")
 
     tournament_size = input("Enter selection tournament size (cannot be bigger than population size): ")
-    while not tournament_size.isnumeric():
-        print("Invalid input, please try again.")
-        tournament_size = input("Enter selection tournament size: ")
-    while int(tournament_size) > int(pop_size) or int(tournament_size) < 2:
-        print(f'Invalid input. Tournament must be number in range from 2 to {pop_size}')
+    while not tournament_size.isnumeric() or not 2 <= int(tournament_size) <= int(pop_size) / 2:
+        print(f'Invalid input. Tournament size is related to population size, and '
+              f'must be a number in range from 2 to {int(int(pop_size) / 2)}')
         tournament_size = input("Enter selection tournament size: ")
 
     global_genre = input("Enter 'j' for jazz, or 'r' for rock: ")
@@ -295,7 +306,6 @@ def harmony_track_builder(sol):
         else:
             C = C | c
 
-
     return C
 
 
@@ -311,14 +321,15 @@ def piece_composer(*args):
 
     return p
 
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
     pop_size, gen_size, tournament_size, global_genre = algorithm_parameter_input()
 
-    sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre , testing_pop=False)
+    sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
     while sol == [0]:
-        sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre , testing_pop=False)
+        sol = genetic_algorithm(int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
 
     melody = generate_melody()
     m1 = melody[0]
