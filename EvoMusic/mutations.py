@@ -3,16 +3,35 @@ import musicpy as mp
 from musicpy import database
 from musicpy.structures import chord
 from musicpy.musicpy import degree_to_note, C
+import note_utilities as noteut
 
 
 # This function creates a list of all
 # the mutation functions and randomly selects
 # one, and returns that functions return value
 def mutate(solution):
-    # func_list = [mutate_sus2, mutate_sus4, mutate_first_inversion, mutate_move_one_tone, mutate_flip_quality]
-    func_list = [mutate_rhythm]
+    func_list = [mutate_fix_second, mutate_sus2, mutate_sus4, mutate_first_inversion, mutate_move_one_tone,
+                 mutate_flip_quality]
     return rnd.choice(func_list)(solution)
 
+
+def mutate_fix_second(solution):
+    length = len(solution)
+    probability = 1 / length
+    # probability = 10
+    random_no = rnd.uniform(0, 1)
+    v = solution.copy()
+
+    for i in range(0, length):
+        if probability >= random_no:
+            if noteut.compute_degree_separation(v[i][0], v[i][1]) == database.minor_second:
+                v[i][1] = v[i][1]+3
+            elif noteut.compute_degree_separation(v[i][0], v[i][1]) == database.major_second:
+                v[i][1] = v[i][1]+2
+            else:
+                pass
+
+    return v
 
 def mutate_rhythm(solution):
     length = len(solution)
@@ -113,10 +132,8 @@ def mutate_flip_quality(solution):
         if probability >= random_no:
             if (v[i][0].degree - v[i][1].degree) * -1 == database.minor_third:
                 v[i][1] = v[i][1] + 1
-                print(f'Made minor third into major third')
             elif (v[i][0].degree - v[i][1].degree) * -1 == database.major_third:
                 v[i][1] = v[i][1] - 1
-                print(f'Made major third into minor third')
             else:
                 pass
     return v
@@ -152,3 +169,44 @@ def mutate_four_one(solution):
         fourth_chord = C(f'{fourth_note}:maj')
         v[random_choice] = fourth_chord.set(0.5, 0) | one_chord.set(0.5, 0)
     return v
+
+
+def bass_mutate_move_tone(bass_solution):
+    length = len(bass_solution)
+    probability = 1 / length
+    # probability = 10
+    v = bass_solution.copy()
+
+    for i in range(0, length):
+        random_no = rnd.uniform(0, 1)
+        if probability >= random_no:
+            if random_no % 2 == 0:
+                v[i] = v[i] + 1
+            else:
+                v[i] = v[i] - 1
+
+    return v
+
+
+def bass_mutate_repeat_tone(bass_solution):
+    length = len(bass_solution)
+    # probability = 1 / length
+    probability = 10
+    random_no = rnd.uniform(0, 1)
+    v = bass_solution.copy()
+    random_index = rnd.choice(range(len(v)))
+    while random_index % 4 != 0 and not random_index <= len(bass_solution)-4:
+        random_index = rnd.choice(range(len(v)))
+
+    if probability >= random_no:
+        repeated_note = v[random_index]
+        for i in range(0, 4):
+            v[random_index+i] = repeated_note
+
+    return v
+
+
+def bass_mutate(bass_solution):
+    # func_list = [bass_mutate_move_tone]
+    func_list = [bass_mutate_repeat_tone]
+    return rnd.choice(func_list)(bass_solution)

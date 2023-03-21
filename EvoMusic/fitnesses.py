@@ -118,7 +118,7 @@ def fit_triad(c) -> int:
             return -1
 
 
-def fitness_ii_V_I(root_notes) -> True | False:
+def fitness_ii_V_I_I(root_notes) -> True | False:
     notes_list = root_notes
 
     if compare_without_octave(root_notes[0], N('D3')) and compare_without_octave(root_notes[1], N('G3')) and \
@@ -127,6 +127,15 @@ def fitness_ii_V_I(root_notes) -> True | False:
     else:
         return False
 
+
+def fitness_I_vi_ii_V(root_notes) -> True | False:
+    notes_list = root_notes
+
+    if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('A3')) and \
+            compare_without_octave(root_notes[2], N('D3')) and compare_without_octave(root_notes[3], N('G3')):
+        return True
+    else:
+        return False
 
 def fitness_I_IV_V_I(root_notes) -> True | False:
 
@@ -149,8 +158,8 @@ def fitness_I_V_vi_IV(root_notes) -> True | False:
 def fitness_chord_progression_window(solution, window_size=4):
     s = solution.copy()
     w = window_size
-    found_ii_V_i = False
-    found_I_IV_V_I = False
+    jazz_progression = False
+    rock_progression = False
 
     if len(s) <= w:
         return 0
@@ -166,14 +175,14 @@ def fitness_chord_progression_window(solution, window_size=4):
         root_4 = chord_progression_bar_4[0]
         roots = [root_1, root_2, root_3, root_4]
 
-        if fitness_ii_V_I(roots):
-            found_ii_V_i = True
+        if fitness_ii_V_I_I(roots) or fitness_I_vi_ii_V(roots):
+            jazz_progression = True
 
-        if fitness_I_IV_V_I(roots):
-            found_I_IV_V_I = True
+        if fitness_I_IV_V_I(roots) or fitness_I_V_vi_IV(roots):
+            rock_progression = True
 
-        if found_ii_V_i or found_I_IV_V_I:
-            return 10
+        if jazz_progression or rock_progression:
+            return 8
     else:
         return 0
 
@@ -212,3 +221,32 @@ def fitness(solution, genre):
                 # sol_fitness = sol_fitness + rock_fitnesses_list(single_chord, 0)
 
         return sol_fitness
+
+
+def bass_fitness_compare_roots(h, b):
+    fit = 0
+    b_first_beat = []
+    if not len(b) < 32:
+        for i in range(len(b)):
+            if i % 4 == 0:
+                b_first_beat.append(b[i])
+
+        for j in range(len(h)):
+            if h[j] == b[j]:
+                fit = fit + 1
+
+    return fit
+
+
+def bass_fitness(harmony_solution, bass_solution):
+    harmony_root_notes = []
+
+    for c in harmony_solution:
+        harmony_root_notes.append(c[0])
+
+    bassline_fitness = 0
+    bassline_fitness = bassline_fitness + bass_fitness_compare_roots(harmony_root_notes, bass_solution)
+
+    return bassline_fitness
+
+
