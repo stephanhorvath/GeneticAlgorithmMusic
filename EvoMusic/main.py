@@ -166,6 +166,7 @@ def genetic_algorithm(part, pop_size, generations, tournament_size=2, genre="jaz
     else:
         population = test_population
 
+    first_sol = rnd.choice(population)
     p_size = len(population)
     g = 0
     t = tournament_size
@@ -210,7 +211,7 @@ def genetic_algorithm(part, pop_size, generations, tournament_size=2, genre="jaz
             generation_log.append((g, best, fitness(best, global_genre)))
             g += 1
     generation_info_printer(generation_log)
-    return best
+    return best, first_sol
 
 
 def tournament_selection(population, tournament_size, global_genre):
@@ -309,14 +310,14 @@ def algorithm_parameter_input() -> ():
         pop_size = input("Enter desired population size: ")
 
     gen_size = input("Enter desired number of generations (max 50): ")
-    while not gen_size.isnumeric() or not 5 <= int(gen_size) <= 50:
-        print("Invalid input. Generation size must be between 5 and 50.")
+    while not gen_size.isnumeric() or not 5 <= int(gen_size) <= 100:
+        print("Invalid input. Generation size must be between 5 and 100.")
         gen_size = input("Enter desired population size: ")
 
     tournament_size = input("Enter selection tournament size (cannot be bigger than population size): ")
-    while not tournament_size.isnumeric() or not 2 <= int(tournament_size) <= int(pop_size) / 2:
+    while not tournament_size.isnumeric() or not 2 <= int(tournament_size) <= int(pop_size):
         print(f'Invalid input. Tournament size is related to population size, and '
-              f'must be a number in range from 2 to {int(int(pop_size) / 2)}')
+              f'must be a number in range from 2 to {int(pop_size)}')
         tournament_size = input("Enter selection tournament size: ")
 
     global_genre = input("Enter 'j' for jazz, or 'r' for rock: ")
@@ -343,7 +344,7 @@ def bass_track_builder(sol):
     return C
 
 
-def harmony_track_builder(sol):
+def track_builder(sol):
     C = 0
     for c in sol:
         if C == 0:
@@ -355,6 +356,17 @@ def harmony_track_builder(sol):
 
 
 def piece_composer(*args):
+    if len(args) == 1:
+        bpms = [80, 100, 120, 150]
+        jazz_piano = args[0]
+
+        p = mp.P(tracks=[jazz_piano],
+                 instruments=['Acoustic Grand Piano'],
+                 bpm=rnd.choice(bpms),
+                 start_times=[0],
+                 track_names=['jazz piano'])
+
+        return p
     if global_genre == "jazz":
         bpms = [80, 100, 120, 150]
         jazz_piano = args[0]
@@ -395,24 +407,30 @@ if __name__ == '__main__':
 
     pop_size, gen_size, tournament_size, global_genre = algorithm_parameter_input()
 
-    harmony = genetic_algorithm("harmony", int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
+    harmony, first_sol = genetic_algorithm("harmony", int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
     while harmony == [0]:
-        harmony = genetic_algorithm("harmony", int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
+        harmony, first_sol = genetic_algorithm("harmony", int(pop_size), int(gen_size), int(tournament_size), global_genre, testing_pop=False)
 
-    bass = genetic_algorithm("bass", int(pop_size), int(gen_size), int(tournament_size), global_genre, harmony)
+    bass = genetic_algorithm("bass", int(pop_size), int(gen_size), int(tournament_size), global_genre, harmony)[0]
 
-    # M = chord(f'{c1}, {c2}, {c3}, {c4}, {c5}, {c6}, {c7}').set(0.25, 0.25)
-    # M = (chord(notes=[m1]).set(0.25, 0.25) | chord(notes=[m2]).set(0.25, 0.25) | chord(notes=[m3]).set(0.25, 0.25) | chord(notes=[m4]).set(0.25, 0.25) | chord(notes=[m5]).set(0.25, 0.25) | chord(notes=[m6]).set(0.25, 0.25) | chord(notes=[m7]).set(0.25, 0.25) | chord(notes=[m8]).set(0.25, 0.25)) * 4
-    # p = mp.P(tracks=[C, M],
-    #          instruments=['Acoustic Grand Piano', 'Electric Guitar (jazz)'],
-    #          bpm=100,
-    #          start_times=[0, 0],
-    #          track_names=['piano', 'guitar'])
+    first_sol = piece_composer(track_builder(first_sol))
+    p = piece_composer(track_builder(harmony), bass_track_builder(bass))
 
-    # p = mp.P(tracks=[C],
-    #          instruments=['Acoustic Grand Piano'],
-    #          bpm=80,
-    #          start_times=[0],
-    #          track_names=['piano'])
-    p = piece_composer(harmony_track_builder(harmony), bass_track_builder(bass))
-    play(p, wait=True)
+    listen = int(input("Enter 1 to listen a random solution of the 1st generation. Enter 2 to listen to the final solution. Enter 3 to quit: "))
+    while listen not in [1, 2, 3]:
+        listen = int(input("Invalid input. Enter 1 to listen a random solution of the 1st generation. Enter 2 to listen to the final solution. Enter 3 to quit: "))
+
+    repeat = True
+    while repeat:
+        while listen not in [1, 2, 3]:
+            listen = int(input("Invalid input. Enter 1 to listen a random solution of the 1st generation. Enter 2 to listen to the final solution. Enter 3 to quit: "))
+        if listen == 1:
+            play(first_sol, wait=True)
+            listen = int(input("Enter 1 to listen a random solution of the 1st generation. Enter 2 to listen to the final solution. Enter 3 to quit: "))
+        elif listen == 2:
+            play(p, wait=True)
+            listen = int(input("Enter 1 to listen a random solution of the 1st generation. Enter 2 to listen to the final solution. Enter 3 to quit: "))
+        elif listen == 3:
+            repeat = False
+        else:
+            print("Something went wrong (:")
