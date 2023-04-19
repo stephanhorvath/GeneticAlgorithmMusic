@@ -13,6 +13,7 @@ def fit_duplicate_tones(c) -> int:
         if i + 2 > c_length:
             pass
         else:
+            # specific notes in chords are accessed through array indexing
             if is_same_pitch(c[i], c[i + 1]) or is_same_pitch(c[i], c[i + 2]) or\
                     is_same_pitch(c[i + 1], c[i + 2]):
                 return -10
@@ -30,6 +31,7 @@ def fit_perfect_fifth(c) -> int:
         if n + 2 > len(c) - 1:
             pass
         else:
+            # specific notes in chords are accessed through array indexing
             if interval_between(c[n], c[n + 2]) == database.perfect_fifth:
                 return 3
     return -1
@@ -49,6 +51,7 @@ def fit_minor_third(c) -> int:
         if i + 1 >= length:
             break
 
+        # bring note down an octave if more than 12 semitones apart
         if degrees[i] - degrees[i + 1] <= -12:
             degrees[i + 1] = degrees[i + 1] - 12
 
@@ -71,6 +74,7 @@ def fit_major_third(c) -> int:
         if i + 1 >= length:
             break
 
+        # bring note down an octave if more than 12 semitones apart
         if degrees[i] - degrees[i + 1] <= -12:
             degrees[i + 1] = degrees[i + 1] - 12
 
@@ -93,6 +97,7 @@ def fit_minor_second(c) -> int:
         if i + 1 >= length:
             break
 
+        # bring note down an octave if more than 12 semitones apart
         if degrees[i] - degrees[i + 1] <= -12:
             degrees[i + 1] = degrees[i + 1] - 12
 
@@ -115,6 +120,7 @@ def fit_major_second(c) -> int:
         if i + 1 >= length:
             break
 
+        # bring note down an octave if more than 12 semitones apart
         if degrees[i] - degrees[i + 1] <= -12:
             degrees[i + 1] = degrees[i + 1] - 12
 
@@ -132,6 +138,7 @@ def fit_triad(c) -> int:
     if no_of_notes < 3:
         return 0
 
+    # chord notes are accessed through array indexing
     for n in range(no_of_notes - 1):
         if (n + 1) > no_of_notes:
             return -1
@@ -150,6 +157,8 @@ in the C major scale (D minor, G major, C major, C major)
 def fitness_ii_V_I_I(root_notes) -> True | False:
     notes_list = root_notes
 
+    # checks for chord progression while ignoring octave
+    # as chords have same function regardless of pitch
     if is_same_pitch(root_notes[0], N('D3')) and is_same_pitch(root_notes[1], N('G3')) and \
             is_same_pitch(root_notes[2], N('C3')) and is_same_pitch(root_notes[3], N('C3')):
         return True
@@ -164,6 +173,8 @@ in the C major scale (C major, A minor, D minor, G major)
 def fitness_I_vi_ii_V(root_notes) -> True | False:
     notes_list = root_notes
 
+    # checks for chord progression while ignoring octave
+    # as chords have same function regardless of pitch
     if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('A3')) and \
             is_same_pitch(root_notes[2], N('D3')) and is_same_pitch(root_notes[3], N('G3')):
         return True
@@ -177,6 +188,8 @@ in the C major scale (C major, F major, G major, C major)
 """
 def fitness_I_IV_V_I(root_notes) -> True | False:
 
+    # checks for chord progression while ignoring octave
+    # as chords have same function regardless of pitch
     if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('F3')) and \
             is_same_pitch(root_notes[2], N('G3')) and is_same_pitch(root_notes[3], N('C3')):
         return True
@@ -190,6 +203,8 @@ in the C major scale (C major, G major, A minor, F major)
 """
 def fitness_I_V_vi_IV(root_notes) -> True | False:
 
+    # checks for chord progression while ignoring octave
+    # as chords have same function regardless of pitch
     if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('G3')) and \
             is_same_pitch(root_notes[2], N('A3')) and is_same_pitch(root_notes[3], N('F3')):
         return True
@@ -210,6 +225,10 @@ def fitness_chord_progression_window(solution, window_size=4):
     if len(s) <= w:
         return 0
 
+    # sliding window that checks an index and the following 3
+    # as one unit
+
+    # the loop always stops at length-4
     for i in range(len(s) - w + 1):
         chord_progression_bar_1 = s[i]
         root_1 = chord_progression_bar_1[0]
@@ -239,8 +258,10 @@ this function runs every chord through every fitness measure
 def fitnesses_list(single_chord, sol_fitness):
     s_c = single_chord.copy()
     s_f = sol_fitness
+    # list of fitness measures
     f_list = [fit_triad, fit_duplicate_tones, fit_perfect_fifth, fit_major_third, fit_minor_third, fit_major_second,
               fit_minor_second]
+    # iterate through all fitness measures and add fitness values
     for fit_func in f_list:
         s_f = s_f + fit_func(s_c)
 
@@ -266,6 +287,7 @@ def fitness(solution, genre):
             if single_chord in Chords:
                 sol_fitness = sol_fitness + 1
 
+            # the idea was to have more genre specific measures
             if genre == "jazz":
                 print("jazz")
                 sol_fitness = sol_fitness + fitnesses_list(single_chord, 0)
@@ -288,6 +310,8 @@ def bass_fitness_compare_roots(h, b):
             if i % 4 == 0:
                 b_first_beat.append(b[i])
 
+        # increment fitness by 1 every time
+        # the bass note and chord root match
         for j in range(len(h)):
             if h[j] == b[j]:
                 fit = fit + 1
