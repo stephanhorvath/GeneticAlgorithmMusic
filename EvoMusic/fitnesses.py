@@ -13,8 +13,8 @@ def fit_duplicate_tones(c) -> int:
         if i + 2 > c_length:
             pass
         else:
-            if compare_without_octave(c[i], c[i + 1]) or compare_without_octave(c[i], c[i + 2]) or\
-                    compare_without_octave(c[i + 1], c[i + 2]):
+            if is_same_pitch(c[i], c[i + 1]) or is_same_pitch(c[i], c[i + 2]) or\
+                    is_same_pitch(c[i + 1], c[i + 2]):
                 return -10
     return 2
 
@@ -25,7 +25,7 @@ def fit_perfect_fifth(c) -> int:
         if n + 2 > len(c) - 1:
             pass
         else:
-            if compute_degree_separation(c[n], c[n + 2]) == database.perfect_fifth:
+            if interval_between(c[n], c[n + 2]) == database.perfect_fifth:
                 return 3
     return -1
 
@@ -121,8 +121,8 @@ def fit_triad(c) -> int:
 def fitness_ii_V_I_I(root_notes) -> True | False:
     notes_list = root_notes
 
-    if compare_without_octave(root_notes[0], N('D3')) and compare_without_octave(root_notes[1], N('G3')) and \
-            compare_without_octave(root_notes[2], N('C3')) and compare_without_octave(root_notes[3], N('C3')):
+    if is_same_pitch(root_notes[0], N('D3')) and is_same_pitch(root_notes[1], N('G3')) and \
+            is_same_pitch(root_notes[2], N('C3')) and is_same_pitch(root_notes[3], N('C3')):
         return True
     else:
         return False
@@ -131,16 +131,16 @@ def fitness_ii_V_I_I(root_notes) -> True | False:
 def fitness_I_vi_ii_V(root_notes) -> True | False:
     notes_list = root_notes
 
-    if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('A3')) and \
-            compare_without_octave(root_notes[2], N('D3')) and compare_without_octave(root_notes[3], N('G3')):
+    if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('A3')) and \
+            is_same_pitch(root_notes[2], N('D3')) and is_same_pitch(root_notes[3], N('G3')):
         return True
     else:
         return False
 
 def fitness_I_IV_V_I(root_notes) -> True | False:
 
-    if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('F3')) and \
-            compare_without_octave(root_notes[2], N('G3')) and compare_without_octave(root_notes[3], N('C3')):
+    if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('F3')) and \
+            is_same_pitch(root_notes[2], N('G3')) and is_same_pitch(root_notes[3], N('C3')):
         return True
     else:
         return False
@@ -148,8 +148,8 @@ def fitness_I_IV_V_I(root_notes) -> True | False:
 
 def fitness_I_V_vi_IV(root_notes) -> True | False:
 
-    if compare_without_octave(root_notes[0], N('C3')) and compare_without_octave(root_notes[1], N('G3')) and \
-            compare_without_octave(root_notes[2], N('A3')) and compare_without_octave(root_notes[3], N('F3')):
+    if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('G3')) and \
+            is_same_pitch(root_notes[2], N('A3')) and is_same_pitch(root_notes[3], N('F3')):
         return True
     else:
         return False
@@ -187,7 +187,7 @@ def fitness_chord_progression_window(solution, window_size=4):
         return 0
 
 
-def jazz_fitnesses_list(single_chord, sol_fitness):
+def fitnesses_list(single_chord, sol_fitness):
     s_c = single_chord.copy()
     s_f = sol_fitness
     f_list = [fit_triad, fit_duplicate_tones, fit_perfect_fifth, fit_major_third, fit_minor_third, fit_major_second,
@@ -215,10 +215,11 @@ def fitness(solution, genre):
                 sol_fitness = sol_fitness + 1
 
             if genre == "jazz":
-                sol_fitness = sol_fitness + jazz_fitnesses_list(single_chord, 0)
+                print("jazz")
+                sol_fitness = sol_fitness + fitnesses_list(single_chord, 0)
             elif genre == "rock":
+                sol_fitness = sol_fitness + fitnesses_list(single_chord, 0)
                 print("rock")
-                # sol_fitness = sol_fitness + rock_fitnesses_list(single_chord, 0)
 
         return sol_fitness
 

@@ -5,47 +5,8 @@ from musicpy.musicpy import N, C, play
 from musicpy.structures import chord
 import random as rnd
 import musicpy as mp
+import c_major_notes as c
 
-E1 = 'E2'
-F1 = 'F2'
-G1 = 'G2'
-A1 = 'A2'
-B1 = 'B2'
-C2 = 'C2'
-D2 = 'D2'
-E2 = 'E2'
-F2 = 'F2'
-G2 = 'G2'
-A2 = 'A2'
-B2 = 'B2'
-C3 = 'C3'
-D3 = 'D3'
-E3 = 'E3'
-F3 = 'F3'
-G3 = 'G3'
-A3 = 'A3'
-B3 = 'B3'
-C4 = 'C4'
-D4 = 'D4'
-E4 = 'E4'
-F4 = 'F4'
-G4 = 'G4'
-A4 = 'A4'
-B4 = 'B4'
-C5 = 'C5'
-D5 = 'D5'
-E5 = 'E5'
-F5 = 'F5'
-G5 = 'G5'
-A5 = 'A5'
-B5 = 'B5'
-C6 = 'C6'
-D6 = 'D6'
-E6 = 'E6'
-F6 = 'F6'
-G6 = 'G6'
-A6 = 'A6'
-B6 = 'B6'
 
 
 CM3 = chord('C3, E3, G4')
@@ -65,13 +26,13 @@ Bm5 = chord('B5, D6, F6')
 
 Chords = [CM3, Dm3, Em3, FM4, GM4, Am4, Bm4, CM4, Dm4, Em4, FM5, GM5, Am5, Bm5]
 
-c_major_scale = [C3, D3, E3, F3, G3, A3, B3,
-                 C4, D4, E4, F4, G4, A4, B4,
-                 C5, D5, E5, F5, G5, A5, B5]
+c_major_scale = [c.C3, c.D3, c.E3, c.F3, c.G3, c.A3, c.B3,
+                 c.C4, c.D4, c.E4, c.F4, c.G4, c.A4, c.B4,
+                 c.C5, c.D5, c.E5, c.F5, c.G5, c.A5, c.B5]
 
-bass_notes = [E1, F1, G1, A1, B1, C2, D2,
-              E2, F2, G2, A2, B2, C3, D3,
-              E3, F3, G3, A3, B3, C4, D4, E4]
+bass_notes = [c.E1, c.F1, c.G1, c.A1, c.B1, c.C2, c.D2,
+              c.E2, c.F2, c.G2, c.A2, c.B2, c.C3, c.D3,
+              c.E3, c.F3, c.G3, c.A3, c.B3, c.C4, c.D4, c.E4]
 
 test_population = [
     [chord('C3, E3, G4'), chord('F3, A3, C4'), chord('G3, B3, D3'), chord('C3, E3, G4'), chord('A3, F4, G5'),
@@ -103,18 +64,14 @@ for i in range(len(test_population)):
 
 
 def generate_harmony() -> []:
-    # solution = [rnd.choices(cmajor, None, k=32)]
-    solution = [0] * 8
-    for i in range(len(solution)):
-        # solution[i] = rnd.choices(c_major_scale, None, k=3)
-        # solution[i] = chord((rnd.choices(c_major_scale, None, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
-        #                                                                                                dotted=None)
-        solution[i] = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0) | mp.rest(duration=1 / 4,
-                                                                                                dotted=None)
+    chords = []
+    for _ in range(8):
+        chord_notes = chord((rnd.sample(c_major_scale, k=3))).inoctave().set(0.75, 0)
+        chord_rest = mp.rest(duration=1/4, dotted=None)
+        chords.append(chord_notes | chord_rest)
 
-    print(f'Initial Sol: {solution}')
-    # solution = solution + solution + solution + solution
-    return solution
+    print(f'Initial Sol: {chords}')
+    return chords
 
 
 def generate_melody() -> []:
@@ -135,18 +92,12 @@ def generate_melody() -> []:
 
 
 def generate_bassline():
-    bass_line = [0] * 32
-    for i in range(len(bass_line)):
-        bass_line[i] = N(rnd.choice(bass_notes)).set(duration=0.25)
-
+    bass_line = [N(rnd.choice(bass_notes)).set(duration=0.25) for _ in range(32)]
     print(f'Initial Sol: {bass_line}')
     return bass_line
 
 
 def create_population(part, population_size) -> [[]]:
-    psize = population_size
-    pop = []
-
     if part == "harmony":
         part_func = generate_harmony
     elif part == "bass":
@@ -154,17 +105,11 @@ def create_population(part, population_size) -> [[]]:
     elif part == "melody":
         part_func = generate_melody
 
-    for i in range(psize):
-        pop.append(part_func())
-
-    return pop
+    return [part_func() for _ in range(population_size)]
 
 
 def genetic_algorithm(part, pop_size, generations, tournament_size=2, genre="jazz", harmony=[0], testing_pop=False):
-    if not testing_pop:
-        population = create_population(part, pop_size)
-    else:
-        population = test_population
+    population = test_population if testing_pop else create_population(part, pop_size)
 
     first_sol = rnd.choice(population)
     p_size = len(population)
@@ -279,20 +224,10 @@ def uniform_crossover(parent_a, parent_b):
     b = parent_b
     length = len(a)
     p = 1 / length
-    # print('\n------------------------')
-    # print(f'Parent A: fitness: {fitness(a, "jazz")} {a}')
-    # print(f'Parent B: fitness: {fitness(b, "jazz")} {b}')
 
     for i in range(length):
-        r = rnd.uniform(0, 1)
-        if p >= r:
-            tmp = a[i]
-            a[i] = b[i]
-            b[i] = tmp
-    # print('------')
-    # print(f'Child A: fitness: {fitness(a, "jazz")} {a}')
-    # print(f'Child B: fitness: {fitness(b, "jazz")} {b}')
-    # print('------')
+        if rnd.uniform(0, 1) <= p:
+            a[i], b[i] = b[i], a[i]
     return a, b
 
 
