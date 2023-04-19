@@ -15,6 +15,13 @@ def mutate(solution):
     return rnd.choice(func_list)(solution)
 
 
+"""
+this function takes a solution and
+calculates the intervals between the 
+first and second note of each chord
+if it is a major/minor second, it converts
+it into a major third
+"""
 def mutate_fix_second(solution):
     length = len(solution)
     probability = 1 / length
@@ -33,6 +40,11 @@ def mutate_fix_second(solution):
     return v
 
 
+"""
+this function changes the default rhythm
+to a more interesting one that is almost
+syncopated
+"""
 def mutate_rhythm(solution):
     length = len(solution)
     probability = 1 / length
@@ -50,6 +62,10 @@ def mutate_rhythm(solution):
     return v
 
 
+"""
+this function randomly converts
+chords into a suspended 2 chord
+"""
 def mutate_sus2(solution):
     length = len(solution)
     probability = 1 / length
@@ -62,6 +78,10 @@ def mutate_sus2(solution):
     return v
 
 
+"""
+this function randomly converts
+chords into a suspended 4 chord
+"""
 def mutate_sus4(solution):
     length = len(solution)
     probability = 1 / length
@@ -74,6 +94,10 @@ def mutate_sus4(solution):
     return v
 
 
+"""
+this function randomly converts
+chords into a dominant 7th chord
+"""
 def mutate_add_7(solution):
     length = len(solution)
     probability = 1 / length
@@ -89,6 +113,11 @@ def mutate_add_7(solution):
     return v
 
 
+"""
+this function randomly converts
+chords into the first inversion
+of that chord
+"""
 def mutate_first_inversion(solution):
     length = len(solution)
     probability = 1 / length
@@ -100,6 +129,11 @@ def mutate_first_inversion(solution):
     return v
 
 
+"""
+this function randomly
+moves chords one tone up
+in pitch
+"""
 def mutate_move_one_tone(solution):
     length = len(solution)
     probability = 1 / length
@@ -111,14 +145,20 @@ def mutate_move_one_tone(solution):
     return v
 
 
+"""
+this function randomly converts
+major triads into minor triads
+and vice versa
+"""
 def mutate_flip_quality(solution):
     length = len(solution)
     probability = 1 / length
-    # probability = -1
     v = solution.copy()
 
     for i in range(1, length):
         if probability >= rnd.uniform(0, 1):
+            # these degree checks convert the notes to MIDI values to
+            # determine the interval between the two notes
             if (v[i][0].degree - v[i][1].degree) * -1 == database.minor_third:
                 v[i][1] = v[i][1] + 1
             elif (v[i][0].degree - v[i][1].degree) * -1 == database.major_third:
@@ -128,34 +168,12 @@ def mutate_flip_quality(solution):
     return v
 
 
-def mutate_five_one(solution):
-    length = len(solution)
-    probability = 1 / length
-    random_choice = rnd.choice(range(len(solution)))
-    v = solution.copy()
-    one_chord = v[random_choice]
-
-    if probability >= rnd.uniform(0, 1) and len(one_chord) <= 6:
-        fifth_note = degree_to_note(v[random_choice][0].degree + database.perfect_fifth)
-        fifth_chord = C(f'{fifth_note}:7')
-        v[random_choice] = fifth_chord.set(0.5, 0) | one_chord.set(0.5, 0)
-    return v
-
-
-def mutate_four_one(solution):
-    length = len(solution)
-    probability = 1 / length
-    random_choice = rnd.choice(range(len(solution)))
-    v = solution.copy()
-    one_chord = v[random_choice]
-
-    if probability >= rnd.uniform(0, 1) and len(one_chord) <= 6:
-        fourth_note = degree_to_note(v[random_choice][0].degree + database.perfect_fourth)
-        fourth_chord = C(f'{fourth_note}:maj')
-        v[random_choice] = fourth_chord.set(0.5, 0) | one_chord.set(0.5, 0)
-    return v
-
-
+"""
+this function randomly moves
+one bass note up in pitch if
+it is on an even index, and
+down in pitch if on odd index
+"""
 def bass_mutate_move_tone(bass_solution):
     length = len(bass_solution)
     probability = 1 / length
@@ -172,6 +190,11 @@ def bass_mutate_move_tone(bass_solution):
     return v
 
 
+"""
+this function randomly chooses a note
+that happened on the first beat of a bar
+and repeats it four times
+"""
 def bass_mutate_repeat_tone(bass_solution):
     length = len(bass_solution)
     # probability = 1 / length
@@ -189,6 +212,9 @@ def bass_mutate_repeat_tone(bass_solution):
     return v
 
 
+"""
+list of bass functions that are randomly applied to solutions
+"""
 def bass_mutate(bass_solution):
     func_list = [bass_mutate_move_tone, bass_mutate_repeat_tone]
     return rnd.choice(func_list)(bass_solution)

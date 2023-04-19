@@ -2,11 +2,11 @@ from main import *
 from note_utilities import *
 
 
-def split_track(t):
-    chords = list(zip(*[iter(t)] * 3))
-    return chords
-
-
+"""
+this function checks if chords
+have the same note but on different
+octaves
+"""
 def fit_duplicate_tones(c) -> int:
     c_length = len(c) - 1
     for i in range(c_length):
@@ -19,6 +19,11 @@ def fit_duplicate_tones(c) -> int:
     return 2
 
 
+"""
+this function checks if the root note of the chord
+and the 3rd note of the chord have a perfect fifth
+between them
+"""
 def fit_perfect_fifth(c) -> int:
     notes = [0] * len(c)
     for n in range(len(c)):
@@ -30,6 +35,10 @@ def fit_perfect_fifth(c) -> int:
     return -1
 
 
+"""
+this function checks if the root note and
+2nd note of the chord form a minor third
+"""
 def fit_minor_third(c) -> int:
     length = len(c)
     degrees = [0] * length
@@ -48,6 +57,10 @@ def fit_minor_third(c) -> int:
     return 0
 
 
+"""
+this function checks if the root note and
+2nd note of the chord form a major third
+"""
 def fit_major_third(c) -> int:
     length = len(c)
     degrees = [0] * length
@@ -66,6 +79,10 @@ def fit_major_third(c) -> int:
     return 0
 
 
+"""
+this function checks if the root note and
+2nd note of the chord form a minor second
+"""
 def fit_minor_second(c) -> int:
     length = len(c)
     degrees = [0] * length
@@ -84,6 +101,10 @@ def fit_minor_second(c) -> int:
     return 0
 
 
+"""
+this function checks if the root note and
+2nd note of the chord form a major second
+"""
 def fit_major_second(c) -> int:
     length = len(c)
     degrees = [0] * length
@@ -102,6 +123,10 @@ def fit_major_second(c) -> int:
     return 0
 
 
+"""
+this function checks if three chord notes
+form a triad
+"""
 def fit_triad(c) -> int:
     no_of_notes = len(c)
     if no_of_notes < 3:
@@ -118,6 +143,10 @@ def fit_triad(c) -> int:
             return -1
 
 
+"""
+this function defines the ii-V-I-I chord progression
+in the C major scale (D minor, G major, C major, C major)
+"""
 def fitness_ii_V_I_I(root_notes) -> True | False:
     notes_list = root_notes
 
@@ -128,6 +157,10 @@ def fitness_ii_V_I_I(root_notes) -> True | False:
         return False
 
 
+"""
+this function defines the I-vi-ii-V chord progression
+in the C major scale (C major, A minor, D minor, G major)
+"""
 def fitness_I_vi_ii_V(root_notes) -> True | False:
     notes_list = root_notes
 
@@ -137,6 +170,11 @@ def fitness_I_vi_ii_V(root_notes) -> True | False:
     else:
         return False
 
+
+"""
+this function defines the I-IV-V-I chord progression
+in the C major scale (C major, F major, G major, C major)
+"""
 def fitness_I_IV_V_I(root_notes) -> True | False:
 
     if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('F3')) and \
@@ -146,6 +184,10 @@ def fitness_I_IV_V_I(root_notes) -> True | False:
         return False
 
 
+"""
+this function defines the I-V-vi-IV chord progression
+in the C major scale (C major, G major, A minor, F major)
+"""
 def fitness_I_V_vi_IV(root_notes) -> True | False:
 
     if is_same_pitch(root_notes[0], N('C3')) and is_same_pitch(root_notes[1], N('G3')) and \
@@ -155,6 +197,10 @@ def fitness_I_V_vi_IV(root_notes) -> True | False:
         return False
 
 
+"""
+this sliding window function checks the solutions
+to see if the chord progressions are anywhere within them
+"""
 def fitness_chord_progression_window(solution, window_size=4):
     s = solution.copy()
     w = window_size
@@ -187,6 +233,9 @@ def fitness_chord_progression_window(solution, window_size=4):
         return 0
 
 
+"""
+this function runs every chord through every fitness measure
+"""
 def fitnesses_list(single_chord, sol_fitness):
     s_c = single_chord.copy()
     s_f = sol_fitness
@@ -198,6 +247,9 @@ def fitnesses_list(single_chord, sol_fitness):
     return s_f
 
 
+"""
+this function calculates the fitness for each solution
+"""
 def fitness(solution, genre):
     if solution is None:
         print("????")
@@ -224,6 +276,10 @@ def fitness(solution, genre):
         return sol_fitness
 
 
+"""
+this function compares the first note of each bar
+in the bass solution and harmony solution
+"""
 def bass_fitness_compare_roots(h, b):
     fit = 0
     b_first_beat = []
@@ -239,6 +295,9 @@ def bass_fitness_compare_roots(h, b):
     return fit
 
 
+"""
+this function calculates the bass solution fitness
+"""
 def bass_fitness(harmony_solution, bass_solution):
     harmony_root_notes = []
 
